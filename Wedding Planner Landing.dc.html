@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: oklch(97.5% 0.012 70); font-family: 'Inter', sans-serif; }
+    ::selection { background: oklch(85% 0.05 30); }
+    @keyframes fadeQuote { 0% { opacity: 0; transform: translateY(6px); } 12% { opacity: 1; transform: translateY(0); } 88% { opacity: 1; } 100% { opacity: 0; } }
+  </style>
+</helmet>
+
+<div style="max-width:1280px;margin:0 auto;padding:28px 48px;display:flex;align-items:center;justify-content:space-between;">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-style:italic;color:oklch(30% 0.04 30);letter-spacing:0.02em;">Evermore</div>
+  <a href="#" onClick="{{ startPlanning }}" style="background:oklch(30% 0.06 30);color:oklch(98% 0.01 70);text-decoration:none;padding:12px 26px;border-radius:2px;font-size:14px;font-weight:500;letter-spacing:0.02em;" style-hover="background:oklch(24% 0.06 30);">Start Planning</a>
+</div>
+
+<div style="max-width:900px;margin:0 auto;padding:64px 32px 90px;text-align:center;">
+  <div style="font-family:'Inter',sans-serif;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;color:oklch(55% 0.08 40);margin-bottom:22px;">{{ eyebrow }}</div>
+  <h1 style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(40px,7vw,74px);line-height:1.06;color:oklch(24% 0.03 40);margin:0 0 30px;">
+    Every love story<br>deserves a plan<br>as beautiful as it is.
+  </h1>
+  <p style="max-width:520px;margin:0 auto 46px;font-size:17px;line-height:1.7;color:oklch(45% 0.02 40);">
+    A calmer way to plan your wedding — budget, guests, timeline, and a private diary of your journey, all in one gentle place.
+  </p>
+
+  <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:80px;">
+    <a href="#" onClick="{{ startPlanning }}" style="background:oklch(30% 0.06 30);color:oklch(98% 0.01 70);text-decoration:none;padding:16px 34px;border-radius:2px;font-size:15px;font-weight:500;" style-hover="background:oklch(24% 0.06 30);">Start Planning</a>
+    <a href="#features" style="border:1px solid oklch(70% 0.03 40);color:oklch(30% 0.03 40);text-decoration:none;padding:16px 34px;border-radius:2px;font-size:15px;font-weight:500;" style-hover="background:oklch(93% 0.02 60);">See how it works</a>
+  </div>
+
+  <div style="min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <p key="{{ quoteIndex }}" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,3.4vw,30px);line-height:1.5;color:oklch(32% 0.04 30);max-width:640px;margin:0 0 14px;animation:fadeQuote 6s ease-in-out;">
+      "{{ currentQuote }}"
+    </p>
+    <div style="width:28px;height:1px;background:oklch(70% 0.05 35);"></div>
+  </div>
+</div>
+
+<div id="features" style="background:oklch(95% 0.015 55);padding:90px 32px;">
+  <div style="max-width:1120px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:56px;">
+      <div style="font-family:'Inter',sans-serif;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;color:oklch(55% 0.08 40);margin-bottom:16px;">Why couples love it</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(30px,4vw,44px);color:oklch(24% 0.03 40);margin:0;">Four places. One calm home for it all.</h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:28px;">
+      <sc-for list="{{ features }}" as="f" hint-placeholder-count="4">
+        <div style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:4px;padding:36px 28px;">
+          <div style="width:44px;height:44px;border-radius:50%;background:oklch(90% 0.03 35);display:flex;align-items:center;justify-content:center;margin-bottom:22px;">
+            <div style="width:14px;height:14px;background:oklch(35% 0.06 30);border-radius:{{ f.shape }};"></div>
+          </div>
+          <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:oklch(24% 0.03 40);margin:0 0 10px;">{{ f.title }}</h3>
+          <p style="font-size:14.5px;line-height:1.65;color:oklch(45% 0.02 40);margin:0;">{{ f.desc }}</p>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+
+<div style="max-width:1280px;margin:0 auto;padding:70px 48px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;color:oklch(30% 0.04 30);">Evermore</div>
+  <p style="font-size:13px;color:oklch(55% 0.02 40);margin:0;">Made for Sarah &amp; Mike — and every couple after them.</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const QUOTES = [
+  "The best marriages aren't built on grand gestures — they're built on choosing each other, quietly, every single day.",
+  "You don't need a perfect wedding. You need a partner who makes the ordinary days feel like enough.",
+  "Love is deciding, over and over, that this person's happiness matters as much as your own.",
+  "A home isn't four walls. It's the person who makes anywhere feel like one.",
+  "The vows matter less than the version of you that keeps them, twenty years from now, when no one's watching.",
+  "Family isn't who you're born to — it's who you choose to build a life with, on purpose, every day.",
+  "The wedding is one day. The marriage is every ordinary Tuesday after it — plan for those, too.",
+  "Say the hard thing gently. Say the small thing often. That's most of what love actually is.",
+  "You'll remember the vows less than the way they looked at you while you said them.",
+  "Two people who fight fair will outlast two people who never fight at all.",
+  "Budgets are just love letters written in numbers — they say what you're willing to sacrifice for.",
+  "Ask for help the same way you'd offer it: without keeping score.",
+  "The best partners aren't the ones who never disappoint you — they're the ones who stay to repair it.",
+  "Plan the wedding together. It's practice for planning the life.",
+  "A good marriage is two people who keep choosing curiosity over certainty about each other.",
+  "Grief and joy will both visit your marriage. Build a home sturdy enough for either guest.",
+  "The smallest promises — texting when you're late, saying thank you — are the ones that add up to forever.",
+  "You are not merging two lives. You're building a third one, made of both.",
+  "Let your families in gently. Let them out gently, too, when the day is yours alone.",
+  "The best apology isn't 'I'm sorry.' It's 'here's what I'll do differently.'",
+  "Some of the best marriages start with the least perfect weddings.",
+  "Patience isn't waiting quietly. It's staying kind while you wait.",
+  "The wedding will be a memory in a week. The way you treated each other planning it will be a habit for life.",
+  "Choose a partner you can be bored with. Excitement fades; ease doesn't.",
+];
+class Component extends DCLogic {
+  state = { quoteIndex: Math.floor(Math.random() * 24) };
+  componentDidMount() {
+    this._t = setInterval(() => {
+      this.setState(s => ({ quoteIndex: (s.quoteIndex + 1) % QUOTES.length }));
+    }, 6000);
+  }
+  componentWillUnmount() { clearInterval(this._t); }
+  renderVals() {
+    return {
+      eyebrow: "Sarah & Mike's Wedding \u2014 142 days to go",
+      quoteIndex: this.state.quoteIndex,
+      currentQuote: QUOTES[this.state.quoteIndex],
+      startPlanning: (e) => { e.preventDefault(); window.location.href = 'Our Wedding Planner.dc.html'; },
+      features: [
+        { title: "Budget", desc: "See planned vs. spent at a glance, with gentle nudges before anything runs over.", shape: "2px" },
+        { title: "Guests & RSVPs", desc: "One shareable link for RSVPs, meals, and plus-ones \u2014 no spreadsheets.", shape: "50%" },
+        { title: "Our Wedding Diary", desc: "A private scrapbook you fill in together \u2014 shareable as a keepsake for guests.", shape: "0" },
+        { title: "Vows Assistant", desc: "Reflective prompts and gentle structure \u2014 it coaches, you write every word.", shape: "50% 0 50% 0" },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
