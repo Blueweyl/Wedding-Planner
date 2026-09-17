@@ -56,10 +56,17 @@ AFTER YOU HOST IT
 
 WHEN YOU CHANGE THE PLANNER
 
-Re-upload the folder AND bump the cache name in sw.js — change
-  var CACHE = 'evermore-1.0';
-to 'evermore-1.1', and so on. Without that, phones keep serving the old
-version from their cache.
+Re-upload the folder, and bump the version line at the top of sw.js:
+  var VERSION = '1.0.1';
+to '1.0.2', and so on. The old cache is then deleted on the phone the
+next time the worker starts.
+
+The planner page itself is fetched from the network first, so a phone that
+has any connection picks up your new upload on its next open even if you
+forget to bump the version -- the cache is only the offline fall-back. If
+the app is open at the time, a small note appears offering a reload, and
+the couple's plan is untouched either way. Bump the version anyway: it is
+what clears the old icons, manifest and fonts.
 
 
 TWO THINGS TO GO IN WITH YOUR EYES OPEN

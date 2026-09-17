@@ -13,9 +13,27 @@
 /* Phone support, and nothing else: when this page is served from a web
    address it announces itself as an installable app and registers the
    offline worker sitting beside it. Opened as a local file — the way the
-   download works — this does nothing at all and asks for nothing. */
+   download works — this does nothing at all and asks for nothing.
+
+   The planner itself reads EVERMORE_PWA.state to say whether it is offline
+   ready, whether a newer version is waiting, or whether the worker could not
+   be registered. Nothing here is allowed to break the planner, so every step
+   is wrapped and the state simply stays where it was. */
 (function () {
+  var pwa = window.EVERMORE_PWA = {
+    state: 'idle',      // idle | pending | ready | update | failed
+    detail: '',
+    notify: null,       // the planner hooks itself in here once it is running
+    activate: null      // set when a newer version is waiting to take over
+  };
+  function set(state, detail) {
+    if (pwa.state === state) return;
+    pwa.state = state;
+    pwa.detail = detail || '';
+    if (typeof pwa.notify === 'function') { try { pwa.notify(); } catch (e) {} }
+  }
   if (!/^https?:$/.test(location.protocol)) return;
+
   var manifest = document.createElement('link');
   manifest.rel = 'manifest';
   manifest.href = 'manifest.webmanifest';
@@ -24,11 +42,66 @@
   touch.rel = 'apple-touch-icon';
   touch.href = 'apple-touch-icon.png';
   document.head.appendChild(touch);
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js')['catch'](function () {});
+
+  if (!('serviceWorker' in navigator)) {
+    set('failed', 'this browser has no offline support');
+    return;
+  }
+  set('pending');
+
+  // A worker was already in charge before this load, so anything that takes
+  // over mid-session is a newer version of the planner.
+  var hadController = !!navigator.serviceWorker.controller;
+  var swept = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function () {
+    if (hadController && !swept) { swept = true; set('update'); }
+  });
+
+  function watch(reg) {
+    function look() {
+      var next = reg.waiting;
+      if (!next || !navigator.serviceWorker.controller) return;
+      pwa.activate = function () {
+        try { next.postMessage({ type: 'SKIP_WAITING' }); } catch (e) {}
+      };
+      set('update');
+    }
+    look();
+    reg.addEventListener('updatefound', function () {
+      var installing = reg.installing;
+      if (!installing) return look();
+      installing.addEventListener('statechange', look);
     });
   }
+
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+      .then(function (reg) {
+        watch(reg);
+        // Ask the host whether there is a newer planner: on every open, and
+        // again whenever an installed app is brought back to the foreground.
+        function refresh() {
+          if (navigator.onLine === false) return;
+          try { reg.update(); } catch (e) {}
+        }
+        var last = 0;
+        document.addEventListener('visibilitychange', function () {
+          if (document.hidden) return;
+          var now = Date.now();
+          if (now - last < 60000) return;
+          last = now;
+          refresh();
+        });
+        refresh();
+        return navigator.serviceWorker.ready;
+      })
+      .then(function () {
+        // Only now is the page genuinely covered offline.
+        if (pwa.state === 'pending') set('ready');
+      })['catch'](function (err) {
+        set('failed', (err && err.message) ? String(err.message).slice(0, 120) : '');
+      });
+  });
 })();
 </script>
 <title>Evermore — Wedding Planner</title>
@@ -149,6 +222,7 @@
     background: #f7ded4; color: #6d3323; font-size: 13.5px; line-height: 1.5;
   }
   .warn-bar.warn-soft { background: #f7ecd6; color: #6b5324; }
+  .warn-bar.warn-info { background: var(--blush); color: var(--deep); }
   .warn-bar > div:first-child { max-width: 760px; overflow-wrap: anywhere; }
   .undo-bar {
     display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
@@ -361,6 +435,32 @@
   var setupDraft = null;      // what was typed, kept across a failed attempt
   var settingsDraft = null;   // Settings edits not yet good enough to save
   var settingsError = '';     // why the last Settings edit was not saved
+  var pwaWarnHidden = false;  // the offline-worker warning has been dismissed
+
+  /* The offline worker only exists for the hosted phone copy. Its notes are
+     kept in their own key so a backup file stays exactly a plan, and so a
+     restored backup never re-opens a note the couple already read. The key
+     has to be declared before the flag that reads it. */
+  var DEVICE_NOTE_KEY = 'evermore_device_note_v1';
+  var deviceNoteDone = deviceNoteSeen();  // the phone/computer note is done with
+
+  function hostedCopy() { return /^https?:$/.test(location.protocol); }
+
+  function deviceNoteSeen() {
+    try { return localStorage.getItem(DEVICE_NOTE_KEY) === 'done'; } catch (e) { return false; }
+  }
+
+  function pwaState() {
+    var p = window.EVERMORE_PWA;
+    return (p && p.state) || 'idle';
+  }
+
+  /* Said only once the browser confirms the page is covered — never on trust. */
+  function offlineLine() {
+    return pwaState() === 'ready'
+      ? 'Offline ready \u2014 this planner opens on this device without a connection.'
+      : '';
+  }
 
   var data = load();
   var tab = 'home';
@@ -839,9 +939,10 @@
 
   function render() {
     updateWarnings();
-    if (!data.setupDone) { app.innerHTML = setupView(); return; }
-    if (view === 'keepsake') { app.innerHTML = keepsakeView(); return; }
-    app.innerHTML = topbar() + undoBar() + '<div class="wrap">' + tabView() + '</div>';
+    if (!data.setupDone) { app.innerHTML = setupView(); }
+    else if (view === 'keepsake') { app.innerHTML = keepsakeView(); }
+    else { app.innerHTML = topbar() + undoBar() + '<div class="wrap">' + tabView() + '</div>'; }
+    updateOfflineStatus();
   }
 
   /* Warnings live outside #app so they can appear while the couple is typing
@@ -865,7 +966,42 @@
         'Restore a backup from Settings \u2014 or carry on here to start fresh.</div>' +
         '<button class="btn" onclick="APP.dismissLoadWarning()">Dismiss</button></div>';
     }
+    if (pwaState() === 'update') {
+      html += '<div class="warn-bar warn-soft" role="status">' +
+        '<div><strong>A newer version of the planner is ready.</strong> Reload to use it. ' +
+        'Your plan stays exactly as it is.</div>' +
+        '<button class="btn" onclick="APP.applyUpdate()">Reload</button></div>';
+    }
+    if (pwaState() === 'failed' && !pwaWarnHidden) {
+      html += '<div class="warn-bar warn-soft" role="status">' +
+        '<div>Offline mode could not be set up on this device, so the planner needs a connection ' +
+        'to open. Everything else works as normal, and your plan is still saved here.</div>' +
+        '<button class="btn" onclick="APP.dismissOfflineWarning()">Dismiss</button></div>';
+    }
+    if (hostedCopy() && !deviceNoteDone) {
+      html += '<div class="warn-bar warn-info" role="status">' +
+        '<div><strong>This device keeps its own plan.</strong> It does not sync with your computer ' +
+        'or any other phone — nothing is sent anywhere. If you have already planned elsewhere, ' +
+        'restore your latest backup file here first.</div>' +
+        '<div class="row" style="gap:8px;">' +
+          '<label class="btn" style="display:inline-block;">Restore latest backup' +
+            '<input type="file" accept="application/json,.json" style="display:none;" ' +
+            'onchange="APP.dismissDeviceNote();APP.importJson(event)">' +
+          '</label>' +
+          '<button class="btn" onclick="APP.dismissDeviceNote()">Got it</button>' +
+        '</div></div>';
+    }
     warnBox.innerHTML = html;
+  }
+
+  /* Updated in place for the same reason as the warning bars: the worker can
+     report in at any moment, including mid-sentence. */
+  function updateOfflineStatus() {
+    var el = document.getElementById('offline-status');
+    if (!el) return;
+    var line = offlineLine();
+    el.textContent = line;
+    el.style.display = line ? '' : 'none';
   }
 
   /* Shown and hidden in place: re-rendering the tab mid-word would move
@@ -1484,7 +1620,9 @@
           '<button class="btn" style="color:var(--over);border-color:#e6c4b8;" onclick="APP.reset()">Reset everything</button>' +
         '</div>' +
 
-        '<div class="muted" id="app-version" style="margin-top:18px;text-align:center;">Evermore Wedding Planner \u00b7 Version ' + APP_VERSION + '</div>' +
+        '<div class="muted" id="offline-status" style="margin-top:18px;text-align:center;' +
+          (offlineLine() ? '' : 'display:none;') + '">' + esc(offlineLine()) + '</div>' +
+        '<div class="muted" id="app-version" style="margin-top:6px;text-align:center;">Evermore Wedding Planner \u00b7 Version ' + APP_VERSION + '</div>' +
       '</div>';
   }
 
@@ -1588,6 +1726,19 @@
 
     retrySave: function () { save(); },
     dismissLoadWarning: function () { loadFailed = false; updateWarnings(); },
+    dismissOfflineWarning: function () { pwaWarnHidden = true; updateWarnings(); },
+
+    applyUpdate: function () {
+      var p = window.EVERMORE_PWA;
+      if (p && typeof p.activate === 'function') { try { p.activate(); } catch (e) {} }
+      location.reload();
+    },
+
+    dismissDeviceNote: function () {
+      deviceNoteDone = true;
+      try { localStorage.setItem(DEVICE_NOTE_KEY, 'done'); } catch (e) {}
+      updateWarnings();
+    },
     undo: function () {
       if (!undoable) return;
       undoable.restore();
@@ -1797,6 +1948,9 @@
   }
 
   window.APP = APP;
+  if (window.EVERMORE_PWA) {
+    window.EVERMORE_PWA.notify = function () { updateWarnings(); updateOfflineStatus(); };
+  }
   render();
 })();
 </script>
