@@ -11,8 +11,13 @@ assistant), all saved locally in the visitor's browser — no backend required.
 - `Wedding Planner Landing.dc.html` — the marketing/landing page. Its
   "Start Planning" button links to the planner app.
 - `Our Wedding Planner.dc.html` — the planner app itself (Home, Budget,
-  Guests, Timeline, Vendors, Diary, Vows tabs). State is persisted to
-  `localStorage` and can be exported/imported as a JSON backup.
+  Guests, Timeline, Vendors, Diary, Vows tabs). On a first visit it asks for
+  both names and a wedding date before it opens (or you can load the example
+  plan). State is persisted to `localStorage` and can be exported/imported as
+  a JSON backup; an incomplete or corrupt backup is rejected and leaves the
+  current plan untouched. If the browser refuses to save (storage full, or
+  private browsing) the planner keeps the change on screen and says plainly
+  that it is unsaved rather than pretending it was stored.
 - `support.js` — the runtime that powers both `.dc.html` pages (parses the
   `<x-dc>` template, evaluates `{{ }}` bindings, and drives the `DCLogic`
   component defined in each page's `<script data-dc-script>` block).
@@ -54,3 +59,6 @@ All planner data (budget, guest list, timeline, vendor info, diary entries,
 vows drafts) lives only in the visitor's browser `localStorage` — nothing is
 sent to a server. Use the "Export backup" / "Import" buttons in the planner
 to save or restore that data as a JSON file.
+
+Clearing the browser's storage for the page resets the planner back to the
+first-run setup.

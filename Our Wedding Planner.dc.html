@@ -13,22 +13,94 @@
   <style>
     body { margin:0; background:oklch(97.5% 0.012 70); font-family:'Inter',sans-serif; color:oklch(24% 0.03 40); }
     input,textarea,select,button { font-family:'Inter',sans-serif; }
+    input,textarea,select { max-width:100%; box-sizing:border-box; }
     @keyframes popIn { 0%{opacity:0;transform:scale(0.9);} 100%{opacity:1;transform:scale(1);} }
+    .wrap { max-width:1200px; margin:0 auto; padding:36px 28px 90px; }
+    .topbar { max-width:1200px; margin:0 auto; padding:16px 28px; display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap; }
+    .vendor-row { display:grid; grid-template-columns:1.3fr 1fr 1.3fr 1fr auto; gap:10px; align-items:center; }
+    .vendor-row > * { min-width:0; }
+    .keepsake { max-width:720px; margin:0 auto; padding:60px 32px; }
+    .vows-grid { display:grid; grid-template-columns:2fr 1fr; gap:24px; }
+    .setup-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .details-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; }
+    .cat-name { width:180px; max-width:100%; }
+    .longtext { overflow-wrap:anywhere; word-break:break-word; }
+    .remove-btn { border:none; background:none; color:oklch(50% 0.02 40); cursor:pointer; font-size:16px; line-height:1;
+      min-width:32px; min-height:32px; border-radius:16px; }
+    .remove-btn:hover { background:oklch(92% 0.02 40); color:oklch(35% 0.08 30); }
+    .remove-btn:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline:2px solid oklch(45% 0.09 30); outline-offset:2px; }
+    @media (max-width:900px) {
+      /* stacked vendor card: name and its remove button share the top line */
+      .vendor-row { grid-template-columns:1fr auto; gap:6px 10px; }
+      .vendor-row > .vendor-name { grid-column:1; grid-row:1; }
+      .vendor-row > .remove-btn { grid-column:2; grid-row:1; justify-self:end; }
+      .vendor-row > input:not(.vendor-name), .vendor-row > select { grid-column:1 / -1; }
+    }
+    @media (max-width:760px) {
+      .vows-grid { grid-template-columns:1fr; }
+      .setup-grid { grid-template-columns:1fr; }
+    }
+    @media (max-width:520px) {
+      .wrap { padding:22px 16px 72px; }
+      .topbar { padding:12px 16px; gap:12px; }
+      .card { padding:20px !important; }
+      .cat-name { width:100%; }
+      .keepsake { padding:40px 16px; }
+    }
   </style>
 </helmet>
+
+<sc-if value="{{ showSetup }}" hint-placeholder-val="{{ false }}">
+  <div style="max-width:620px;margin:0 auto;padding:64px 20px 90px;">
+    <div style="text-align:center;margin-bottom:34px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-style:italic;color:oklch(28% 0.05 30);">Evermore</div>
+      <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:oklch(55% 0.06 40);margin-top:10px;">Let's set up your planner</div>
+    </div>
+    <div class="card" style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:32px;">
+      <div class="setup-grid" style="margin-bottom:14px;">
+        <label style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);">Your name
+          <input id="setup-partner-a" value="{{ setupPartnerA }}" onChange="{{ onSetupPartnerA }}" placeholder="Sarah" style="display:block;width:100%;margin-top:6px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:10px 12px;font-size:14px;letter-spacing:normal;text-transform:none;color:oklch(28% 0.02 40);" />
+        </label>
+        <label style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);">Partner's name
+          <input id="setup-partner-b" value="{{ setupPartnerB }}" onChange="{{ onSetupPartnerB }}" placeholder="Mike" style="display:block;width:100%;margin-top:6px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:10px 12px;font-size:14px;letter-spacing:normal;text-transform:none;color:oklch(28% 0.02 40);" />
+        </label>
+        <label style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);">Wedding date
+          <input id="setup-date" type="date" value="{{ setupDate }}" onChange="{{ onSetupDate }}" style="display:block;width:100%;margin-top:6px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:10px 12px;font-size:14px;letter-spacing:normal;color:oklch(28% 0.02 40);" />
+        </label>
+        <label style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);">Total budget <span style="text-transform:none;letter-spacing:normal;">(optional)</span>
+          <input id="setup-budget" type="number" min="0" step="1" value="{{ setupBudget }}" onChange="{{ onSetupBudget }}" placeholder="35000" style="display:block;width:100%;margin-top:6px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:10px 12px;font-size:14px;letter-spacing:normal;color:oklch(28% 0.02 40);" />
+        </label>
+      </div>
+      <label style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);display:block;margin-bottom:18px;">The vibe <span style="text-transform:none;letter-spacing:normal;">(optional)</span>
+        <input id="setup-vibe" value="{{ setupVibe }}" onChange="{{ onSetupVibe }}" placeholder="cozy backyard" style="display:block;width:100%;margin-top:6px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:10px 12px;font-size:14px;letter-spacing:normal;text-transform:none;color:oklch(28% 0.02 40);" />
+      </label>
+
+      <sc-if value="{{ hasSetupError }}" hint-placeholder-val="{{ false }}">
+        <div role="alert" class="longtext" style="background:oklch(90% 0.06 35);color:oklch(30% 0.07 30);border-radius:6px;padding:12px 16px;margin-bottom:18px;font-size:13px;">{{ setupError }}</div>
+      </sc-if>
+
+      <button type="button" onClick="{{ startPlanning }}" style="width:100%;border:none;background:oklch(30% 0.06 30);color:oklch(98% 0.01 70);padding:14px 20px;border-radius:20px;font-size:14px;font-weight:500;cursor:pointer;">Start planning</button>
+      <div style="text-align:center;margin-top:16px;">
+        <button type="button" onClick="{{ useSampleData }}" style="border:none;background:none;color:oklch(45% 0.03 40);font-size:12.5px;text-decoration:underline;cursor:pointer;">Just show me the example plan first</button>
+      </div>
+      <div class="longtext" style="font-size:12px;color:oklch(58% 0.02 40);margin-top:18px;text-align:center;">Everything stays in this browser. Export a backup any time from the planner.</div>
+    </div>
+  </div>
+</sc-if>
 
 <sc-if value="{{ showApp }}" hint-placeholder-val="{{ true }}">
 <div>
   <div style="position:sticky;top:0;z-index:10;background:oklch(97.5% 0.012 70 / 0.94);backdrop-filter:blur(6px);border-bottom:1px solid oklch(90% 0.015 55);">
-    <div style="max-width:1200px;margin:0 auto;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:21px;font-style:italic;color:oklch(30% 0.06 30);white-space:nowrap;">{{ coupleTitle }}</div>
-      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+    <div class="topbar">
+      <div class="longtext" style="font-family:'Cormorant Garamond',serif;font-size:21px;font-style:italic;color:oklch(30% 0.06 30);">{{ coupleTitle }}</div>
+      <nav aria-label="Planner sections" style="display:flex;gap:4px;flex-wrap:wrap;">
         <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="7">
-          <button onClick="{{ t.onClick }}" style="border:none;background:{{ t.bg }};color:{{ t.color }};padding:9px 16px;border-radius:20px;font-size:13.5px;font-weight:500;cursor:pointer;">{{ t.label }}</button>
+          <button type="button" onClick="{{ t.onClick }}" aria-current="{{ t.current }}" style="border:none;background:{{ t.bg }};color:{{ t.color }};padding:9px 16px;border-radius:20px;font-size:13.5px;font-weight:500;cursor:pointer;">{{ t.label }}</button>
         </sc-for>
-      </div>
+      </nav>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button onClick="{{ exportData }}" style="border:1px solid oklch(80% 0.02 50);background:none;color:oklch(40% 0.02 40);padding:8px 12px;border-radius:16px;font-size:12.5px;cursor:pointer;">Export backup</button>
+        <button type="button" onClick="{{ exportData }}" style="border:1px solid oklch(80% 0.02 50);background:none;color:oklch(40% 0.02 40);padding:8px 12px;border-radius:16px;font-size:12.5px;cursor:pointer;">Export backup</button>
         <label style="border:1px solid oklch(80% 0.02 50);background:none;color:oklch(40% 0.02 40);padding:8px 12px;border-radius:16px;font-size:12.5px;cursor:pointer;">Import
           <input type="file" accept="application/json" onChange="{{ importData }}" style="display:none;" />
         </label>
@@ -36,7 +108,38 @@
     </div>
   </div>
 
-  <div style="max-width:1200px;margin:0 auto;padding:36px 28px 90px;">
+  <sc-if value="{{ saveFailed }}" hint-placeholder-val="{{ false }}">
+    <div role="alert" style="max-width:1200px;margin:16px auto 0;padding:14px 20px;background:oklch(88% 0.08 35);border-radius:6px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+      <div class="longtext" style="font-size:13.5px;color:oklch(28% 0.07 30);max-width:760px;">
+        <b>Your last change is not saved.</b> This browser refused to store it &mdash; it may be full, or in private mode. Nothing you typed was lost, but it will disappear if you close this tab. Export a backup now, then try saving again.
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" onClick="{{ exportData }}" style="border:1px solid oklch(45% 0.06 30);background:oklch(98% 0.01 60);color:oklch(30% 0.06 30);padding:8px 14px;border-radius:16px;font-size:12.5px;cursor:pointer;">Export backup</button>
+        <button type="button" onClick="{{ retrySave }}" style="border:1px solid oklch(45% 0.06 30);background:none;color:oklch(30% 0.06 30);padding:8px 14px;border-radius:16px;font-size:12.5px;cursor:pointer;">Try saving again</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ loadFailed }}" hint-placeholder-val="{{ false }}">
+    <div role="alert" style="max-width:1200px;margin:16px auto 0;padding:14px 20px;background:oklch(90% 0.05 70);border-radius:6px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+      <div class="longtext" style="font-size:13.5px;color:oklch(30% 0.05 40);max-width:760px;">
+        There is saved data in this browser that could not be read, so it was left untouched. Import a backup to restore your plan &mdash; or keep planning from here to start over.
+      </div>
+      <button type="button" onClick="{{ dismissLoadWarning }}" style="border:1px solid oklch(55% 0.05 50);background:none;color:oklch(35% 0.04 40);padding:8px 14px;border-radius:16px;font-size:12.5px;cursor:pointer;">Dismiss</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasUndo }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="max-width:1200px;margin:16px auto 0;padding:12px 20px;background:oklch(93% 0.02 55);border:1px solid oklch(88% 0.015 55);border-radius:6px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+      <div class="longtext" style="font-size:13.5px;color:oklch(38% 0.02 40);">{{ undoLabel }}</div>
+      <div style="display:flex;gap:8px;">
+        <button type="button" onClick="{{ undoDelete }}" style="border:1px solid oklch(70% 0.05 35);background:oklch(98% 0.01 60);color:oklch(30% 0.05 30);padding:7px 14px;border-radius:16px;font-size:12.5px;cursor:pointer;">Undo</button>
+        <button type="button" class="remove-btn" onClick="{{ dismissUndo }}" aria-label="Dismiss undo notice">&times;</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <div class="wrap">
 
     <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
       <div>
@@ -77,9 +180,30 @@
           </div>
         </div>
 
-        <div style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:32px;">
+        <div class="card" style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:32px;margin-bottom:28px;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;margin-bottom:14px;">Our Details</div>
+          <div class="details-grid">
+            <label style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);">Your name
+              <input id="details-partner-a" value="{{ profileA }}" onChange="{{ onProfileAChange }}" style="display:block;width:100%;margin-top:6px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:8px 10px;font-size:13.5px;letter-spacing:normal;text-transform:none;color:oklch(28% 0.02 40);" />
+            </label>
+            <label style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);">Partner's name
+              <input id="details-partner-b" value="{{ profileB }}" onChange="{{ onProfileBChange }}" style="display:block;width:100%;margin-top:6px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:8px 10px;font-size:13.5px;letter-spacing:normal;text-transform:none;color:oklch(28% 0.02 40);" />
+            </label>
+            <label style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);">Wedding date
+              <input id="details-date" type="date" value="{{ profileDate }}" onChange="{{ onProfileDateChange }}" style="display:block;width:100%;margin-top:6px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:8px 10px;font-size:13.5px;letter-spacing:normal;color:oklch(28% 0.02 40);" />
+            </label>
+            <label style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);">The vibe
+              <input id="details-vibe" value="{{ profileVibe }}" onChange="{{ onProfileVibeChange }}" style="display:block;width:100%;margin-top:6px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:8px 10px;font-size:13.5px;letter-spacing:normal;text-transform:none;color:oklch(28% 0.02 40);" />
+            </label>
+          </div>
+          <sc-if value="{{ detailsWarning }}" hint-placeholder-val="{{ false }}">
+            <div role="alert" style="font-size:12.5px;color:oklch(45% 0.1 30);margin-top:12px;">Both names and a wedding date keep your countdown and RSVP link working.</div>
+          </sc-if>
+        </div>
+
+        <div class="card" style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:32px;">
           <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;margin-bottom:14px;">Our Story</div>
-          <textarea value="{{ storyText }}" onChange="{{ onStoryChange }}" rows="4" style="width:100%;border:1px solid oklch(88% 0.015 55);border-radius:6px;padding:14px;font-size:14.5px;line-height:1.65;color:oklch(30% 0.02 40);resize:vertical;box-sizing:border-box;font-family:'Inter',sans-serif;"></textarea>
+          <textarea value="{{ storyText }}" onChange="{{ onStoryChange }}" rows="4" aria-label="Our story" style="width:100%;border:1px solid oklch(88% 0.015 55);border-radius:6px;padding:14px;font-size:14.5px;line-height:1.65;color:oklch(30% 0.02 40);resize:vertical;box-sizing:border-box;font-family:'Inter',sans-serif;"></textarea>
         </div>
       </div>
     </sc-if>
@@ -94,74 +218,94 @@
         </sc-if>
 
         <div style="display:flex;gap:24px;margin-bottom:24px;flex-wrap:wrap;">
-          <div><div style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(55% 0.02 40);">Planned</div><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;">{{ totalPlannedLabel }}</div></div>
-          <div><div style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(55% 0.02 40);">Spent</div><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;">{{ totalSpentLabel }}</div></div>
+          <div><div style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(55% 0.02 40);">Planned</div><div id="budget-total-planned" style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;">{{ totalPlannedLabel }}</div></div>
+          <div><div style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(55% 0.02 40);">Spent</div><div id="budget-total-spent" style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;">{{ totalSpentLabel }}</div></div>
+          <sc-if value="{{ budgetNotSet }}" hint-placeholder-val="{{ false }}">
+            <div style="align-self:center;"><div id="budget-not-set" class="longtext" style="font-size:13px;color:oklch(45% 0.05 40);max-width:420px;">Budget not set &mdash; add a planned amount to a category and we'll track against it.</div></div>
+          </sc-if>
         </div>
 
-        <div style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:28px;">
+        <div class="card" style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:28px;">
           <sc-for list="{{ budgetRows }}" as="c" hint-placeholder-count="6">
             <div style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid oklch(93% 0.01 55);">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;flex-wrap:wrap;">
-                <input value="{{ c.name }}" onChange="{{ c.onNameChange }}" style="border:none;background:none;font-size:15px;font-weight:600;color:oklch(28% 0.02 40);width:180px;font-family:'Inter',sans-serif;" />
-                <div style="display:flex;gap:8px;align-items:center;">
-                  <span style="font-size:12px;color:oklch(55% 0.02 40);">planned</span>
-                  <input type="number" value="{{ c.planned }}" onChange="{{ c.onPlannedChange }}" style="width:80px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:5px 8px;font-size:13px;" />
-                  <span style="font-size:12px;color:oklch(55% 0.02 40);">spent</span>
-                  <input type="number" value="{{ c.spent }}" onChange="{{ c.onSpentChange }}" style="width:80px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:5px 8px;font-size:13px;" />
-                  <button onClick="{{ c.onRemove }}" style="border:none;background:none;color:oklch(60% 0.02 40);cursor:pointer;font-size:16px;">&times;</button>
+                <input class="cat-name" value="{{ c.name }}" onChange="{{ c.onNameChange }}" aria-label="{{ c.nameLabel }}" style="border:none;background:none;font-size:15px;font-weight:600;color:oklch(28% 0.02 40);font-family:'Inter',sans-serif;" />
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                  <label style="font-size:12px;color:oklch(55% 0.02 40);display:flex;gap:6px;align-items:center;">planned
+                    <input type="number" min="0" step="1" value="{{ c.planned }}" onChange="{{ c.onPlannedChange }}" aria-label="{{ c.plannedLabel }}" style="width:82px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:5px 8px;font-size:13px;" />
+                  </label>
+                  <label style="font-size:12px;color:oklch(55% 0.02 40);display:flex;gap:6px;align-items:center;">spent
+                    <input type="number" min="0" step="1" value="{{ c.spent }}" onChange="{{ c.onSpentChange }}" aria-label="{{ c.spentLabel }}" style="width:82px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:5px 8px;font-size:13px;" />
+                  </label>
+                  <button type="button" class="remove-btn" onClick="{{ c.onRemove }}" aria-label="{{ c.removeLabel }}" title="{{ c.removeLabel }}">&times;</button>
                 </div>
               </div>
               <div style="height:8px;background:oklch(92% 0.015 55);border-radius:4px;overflow:hidden;position:relative;">
                 <div style="height:100%;width:{{ c.barWidth }};background:{{ c.barColor }};border-radius:4px;"></div>
               </div>
+              <sc-if value="{{ c.showNote }}" hint-placeholder-val="{{ false }}">
+                <div class="longtext" style="font-size:12px;color:oklch(48% 0.1 30);margin-top:7px;">{{ c.note }}</div>
+              </sc-if>
             </div>
           </sc-for>
-          <button onClick="{{ addBudgetCategory }}" style="border:1px solid oklch(80% 0.02 50);background:none;color:oklch(40% 0.02 40);padding:9px 16px;border-radius:16px;font-size:13px;cursor:pointer;">+ Add category</button>
+          <button type="button" onClick="{{ addBudgetCategory }}" style="border:1px solid oklch(80% 0.02 50);background:none;color:oklch(40% 0.02 40);padding:9px 16px;border-radius:16px;font-size:13px;cursor:pointer;">+ Add category</button>
         </div>
       </div>
     </sc-if>
 
     <sc-if value="{{ isGuests }}" hint-placeholder-val="{{ false }}">
       <div>
-        <div style="display:flex;gap:20px;margin-bottom:24px;flex-wrap:wrap;">
+        <div style="display:flex;gap:20px;margin-bottom:18px;flex-wrap:wrap;align-items:baseline;">
+          <div id="guest-attending" style="font-size:15px;color:oklch(28% 0.03 35);"><b>{{ guestAttending }}</b> attending</div>
           <div style="font-size:13.5px;color:oklch(40% 0.02 40);"><b>{{ guestTotal }}</b> invited</div>
           <div style="font-size:13.5px;color:oklch(40% 0.02 40);"><b>{{ guestYes }}</b> yes</div>
           <div style="font-size:13.5px;color:oklch(40% 0.02 40);"><b>{{ guestNo }}</b> no</div>
           <div style="font-size:13.5px;color:oklch(40% 0.02 40);"><b>{{ guestPending }}</b> pending</div>
-          <div style="font-size:13.5px;color:oklch(40% 0.02 40);"><b>{{ guestPlusOnes }}</b> plus-ones</div>
+          <div style="font-size:13.5px;color:oklch(40% 0.02 40);"><b>{{ guestPlusOnes }}</b> confirmed plus-ones</div>
         </div>
+        <div style="font-size:12.5px;color:oklch(55% 0.02 40);margin-bottom:22px;">Attending counts confirmed "yes" guests plus their confirmed plus-ones.</div>
+
+        <sc-if value="{{ hasDuplicateGuests }}" hint-placeholder-val="{{ false }}">
+          <div role="alert" class="longtext" style="background:oklch(90% 0.05 70);border-radius:6px;padding:12px 18px;margin-bottom:20px;font-size:13px;color:oklch(32% 0.05 40);">{{ duplicateGuestLine }}</div>
+        </sc-if>
 
         <div style="background:oklch(93% 0.03 35);border-radius:6px;padding:16px 22px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
-          <div>
+          <div style="min-width:0;">
             <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(50% 0.05 30);margin-bottom:4px;">Shareable RSVP link</div>
-            <div style="font-size:14px;color:oklch(30% 0.05 30);font-family:monospace;">{{ rsvpLink }}</div>
+            <div class="longtext" style="font-size:14px;color:oklch(30% 0.05 30);font-family:monospace;">{{ rsvpLink }}</div>
           </div>
           <div style="display:flex;gap:8px;">
-            <button onClick="{{ copyLink }}" style="border:1px solid oklch(70% 0.05 35);background:oklch(98% 0.01 60);color:oklch(30% 0.05 30);padding:9px 16px;border-radius:16px;font-size:13px;cursor:pointer;">{{ copyLabel }}</button>
-            <button onClick="{{ exportGuestsCsv }}" style="border:1px solid oklch(70% 0.05 35);background:oklch(98% 0.01 60);color:oklch(30% 0.05 30);padding:9px 16px;border-radius:16px;font-size:13px;cursor:pointer;">Export CSV</button>
+            <button type="button" onClick="{{ copyLink }}" style="border:1px solid oklch(70% 0.05 35);background:oklch(98% 0.01 60);color:oklch(30% 0.05 30);padding:9px 16px;border-radius:16px;font-size:13px;cursor:pointer;">{{ copyLabel }}</button>
+            <button type="button" onClick="{{ exportGuestsCsv }}" style="border:1px solid oklch(70% 0.05 35);background:oklch(98% 0.01 60);color:oklch(30% 0.05 30);padding:9px 16px;border-radius:16px;font-size:13px;cursor:pointer;">Export CSV</button>
           </div>
         </div>
 
-        <div style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:28px;">
+        <div class="card" style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:28px;">
           <sc-for list="{{ guestRows }}" as="g" hint-placeholder-count="5">
             <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid oklch(93% 0.01 55);flex-wrap:wrap;">
-              <input value="{{ g.name }}" onChange="{{ g.onNameChange }}" style="border:none;background:none;font-size:14.5px;flex:1;min-width:120px;font-family:'Inter',sans-serif;" />
-              <select value="{{ g.status }}" onChange="{{ g.onStatusChange }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:6px 8px;font-size:13px;">
+              <input value="{{ g.name }}" onChange="{{ g.onNameChange }}" aria-label="{{ g.nameLabel }}" style="border:none;background:none;font-size:14.5px;flex:1;min-width:120px;font-family:'Inter',sans-serif;" />
+              <sc-if value="{{ g.isDuplicate }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:10.5px;background:oklch(88% 0.06 70);color:oklch(35% 0.06 40);padding:2px 7px;border-radius:10px;white-space:nowrap;">duplicate name</span>
+              </sc-if>
+              <select value="{{ g.status }}" onChange="{{ g.onStatusChange }}" aria-label="{{ g.statusLabel }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:6px 8px;font-size:13px;">
                 <option value="Pending">Pending</option>
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
               </select>
-              <input placeholder="meal" value="{{ g.meal }}" onChange="{{ g.onMealChange }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:6px 8px;font-size:13px;width:110px;" />
-              <label style="font-size:12.5px;color:oklch(45% 0.02 40);display:flex;align-items:center;gap:5px;">
-                <input type="checkbox" checked="{{ g.plusOne }}" onChange="{{ g.onPlusOneChange }}" /> +1
+              <input placeholder="meal" value="{{ g.meal }}" onChange="{{ g.onMealChange }}" aria-label="{{ g.mealLabel }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:6px 8px;font-size:13px;width:110px;" />
+              <label style="font-size:12.5px;color:{{ g.plusOneColor }};display:flex;align-items:center;gap:5px;">
+                <input type="checkbox" checked="{{ g.plusOne }}" disabled="{{ g.plusOneDisabled }}" onChange="{{ g.onPlusOneChange }}" aria-label="{{ g.plusOneLabel }}" /> +1
               </label>
-              <button onClick="{{ g.onRemove }}" style="border:none;background:none;color:oklch(60% 0.02 40);cursor:pointer;font-size:16px;">&times;</button>
+              <button type="button" class="remove-btn" onClick="{{ g.onRemove }}" aria-label="{{ g.removeLabel }}" title="{{ g.removeLabel }}">&times;</button>
             </div>
           </sc-for>
-          <div style="display:flex;gap:8px;margin-top:16px;">
-            <input placeholder="Add a guest" value="{{ newGuestName }}" onChange="{{ onNewGuestChange }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:8px 10px;font-size:13.5px;flex:1;" />
-            <button onClick="{{ addGuest }}" style="border:1px solid oklch(80% 0.02 50);background:none;color:oklch(40% 0.02 40);padding:8px 16px;border-radius:16px;font-size:13px;cursor:pointer;">Add</button>
+          <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
+            <input id="new-guest-name" placeholder="Add a guest" value="{{ newGuestName }}" onChange="{{ onNewGuestChange }}" aria-label="Name of the guest to add" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:8px 10px;font-size:13.5px;flex:1;min-width:140px;" />
+            <button type="button" onClick="{{ addGuest }}" style="border:1px solid oklch(80% 0.02 50);background:none;color:oklch(40% 0.02 40);padding:8px 16px;border-radius:16px;font-size:13px;cursor:pointer;">Add</button>
           </div>
+          <sc-if value="{{ hasGuestNotice }}" hint-placeholder-val="{{ false }}">
+            <div role="alert" class="longtext" style="font-size:12.5px;color:oklch(45% 0.1 30);margin-top:10px;">{{ guestNotice }}</div>
+          </sc-if>
         </div>
       </div>
     </sc-if>
@@ -189,29 +333,38 @@
     </sc-if>
 
     <sc-if value="{{ isVendors }}" hint-placeholder-val="{{ false }}">
-      <div style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:28px;">
+      <div class="card" style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:28px;">
         <sc-for list="{{ vendorRows }}" as="v" hint-placeholder-count="4">
-          <div style="display:grid;grid-template-columns:1.3fr 1fr 1.3fr 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid oklch(93% 0.01 55);">
-            <input value="{{ v.name }}" onChange="{{ v.onNameChange }}" style="border:none;background:none;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;" />
-            <input value="{{ v.category }}" onChange="{{ v.onCategoryChange }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:6px 8px;font-size:12.5px;" />
-            <input value="{{ v.contact }}" onChange="{{ v.onContactChange }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:6px 8px;font-size:12.5px;" />
-            <select value="{{ v.status }}" onChange="{{ v.onStatusChange }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:6px 8px;font-size:12.5px;">
+          <div class="vendor-row" style="padding:12px 0;border-bottom:1px solid oklch(93% 0.01 55);">
+            <input class="vendor-name" value="{{ v.name }}" onChange="{{ v.onNameChange }}" aria-label="{{ v.nameLabel }}" style="border:none;background:none;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;" />
+            <input placeholder="category" value="{{ v.category }}" onChange="{{ v.onCategoryChange }}" aria-label="{{ v.categoryLabel }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:6px 8px;font-size:12.5px;" />
+            <input placeholder="contact" value="{{ v.contact }}" onChange="{{ v.onContactChange }}" aria-label="{{ v.contactLabel }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:6px 8px;font-size:12.5px;" />
+            <select value="{{ v.status }}" onChange="{{ v.onStatusChange }}" aria-label="{{ v.statusLabel }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:6px 8px;font-size:12.5px;">
               <option>Inquiring</option>
               <option>Deposit Paid</option>
               <option>Contracted</option>
               <option>Paid in Full</option>
             </select>
-            <button onClick="{{ v.onRemove }}" style="border:none;background:none;color:oklch(60% 0.02 40);cursor:pointer;font-size:16px;">&times;</button>
-            <div style="grid-column:1 / -1;display:flex;gap:16px;align-items:center;font-size:12px;color:oklch(50% 0.02 40);">
-              <span>deposit due <input type="date" value="{{ v.deposit }}" onChange="{{ v.onDepositChange }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:4px 6px;font-size:12px;" /></span>
-              <span>final due <input type="date" value="{{ v.final }}" onChange="{{ v.onFinalChange }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:4px 6px;font-size:12px;" /></span>
-              <sc-if value="{{ v.dueSoon }}" hint-placeholder-val="{{ false }}">
-                <span style="background:oklch(88% 0.06 40);color:oklch(30% 0.06 30);padding:2px 8px;border-radius:10px;font-size:11px;">due soon</span>
+            <button type="button" class="remove-btn" onClick="{{ v.onRemove }}" aria-label="{{ v.removeLabel }}" title="{{ v.removeLabel }}" style="justify-self:start;">&times;</button>
+            <div style="grid-column:1 / -1;display:flex;gap:14px;align-items:center;font-size:12px;color:oklch(50% 0.02 40);flex-wrap:wrap;">
+              <label style="display:flex;gap:6px;align-items:center;">deposit due <input type="date" value="{{ v.deposit }}" onChange="{{ v.onDepositChange }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:4px 6px;font-size:12px;" /></label>
+              <sc-if value="{{ v.depositOverdue }}" hint-placeholder-val="{{ false }}">
+                <span style="background:oklch(58% 0.15 28);color:oklch(98% 0.01 70);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.04em;">DEPOSIT OVERDUE</span>
+              </sc-if>
+              <sc-if value="{{ v.depositSoon }}" hint-placeholder-val="{{ false }}">
+                <span style="background:oklch(88% 0.06 40);color:oklch(30% 0.06 30);padding:2px 8px;border-radius:10px;font-size:11px;">deposit due soon</span>
+              </sc-if>
+              <label style="display:flex;gap:6px;align-items:center;">final due <input type="date" value="{{ v.final }}" onChange="{{ v.onFinalChange }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:4px 6px;font-size:12px;" /></label>
+              <sc-if value="{{ v.finalOverdue }}" hint-placeholder-val="{{ false }}">
+                <span style="background:oklch(58% 0.15 28);color:oklch(98% 0.01 70);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.04em;">FINAL PAYMENT OVERDUE</span>
+              </sc-if>
+              <sc-if value="{{ v.finalSoon }}" hint-placeholder-val="{{ false }}">
+                <span style="background:oklch(88% 0.06 40);color:oklch(30% 0.06 30);padding:2px 8px;border-radius:10px;font-size:11px;">final due soon</span>
               </sc-if>
             </div>
           </div>
         </sc-for>
-        <button onClick="{{ addVendor }}" style="border:1px solid oklch(80% 0.02 50);background:none;color:oklch(40% 0.02 40);padding:9px 16px;border-radius:16px;font-size:13px;cursor:pointer;margin-top:16px;">+ Add vendor</button>
+        <button type="button" onClick="{{ addVendor }}" style="border:1px solid oklch(80% 0.02 50);background:none;color:oklch(40% 0.02 40);padding:9px 16px;border-radius:16px;font-size:13px;cursor:pointer;margin-top:16px;">+ Add vendor</button>
       </div>
     </sc-if>
 
@@ -220,17 +373,17 @@
         <div style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:24px;margin-bottom:24px;">
           <div style="font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;margin-bottom:12px;">New entry</div>
           <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
-            <input type="date" value="{{ newEntryDate }}" onChange="{{ onNewEntryDateChange }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:7px 9px;font-size:13px;" />
-            <select value="{{ newEntryMood }}" onChange="{{ onNewEntryMoodChange }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:7px 9px;font-size:13px;">
+            <input type="date" value="{{ newEntryDate }}" onChange="{{ onNewEntryDateChange }}" aria-label="Date of this diary entry" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:7px 9px;font-size:13px;" />
+            <select value="{{ newEntryMood }}" onChange="{{ onNewEntryMoodChange }}" aria-label="Mood for this diary entry" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:7px 9px;font-size:13px;">
               <option>Joyful</option><option>Grateful</option><option>Overwhelmed</option><option>Excited</option><option>Reflective</option>
             </select>
           </div>
-          <textarea placeholder="What happened? How did it feel?" value="{{ newEntryText }}" onChange="{{ onNewEntryTextChange }}" rows="3" style="width:100%;border:1px solid oklch(88% 0.015 55);border-radius:6px;padding:12px;font-size:14px;box-sizing:border-box;resize:vertical;font-family:'Inter',sans-serif;"></textarea>
-          <button onClick="{{ addDiaryEntry }}" style="border:1px solid oklch(80% 0.02 50);background:none;color:oklch(40% 0.02 40);padding:8px 16px;border-radius:16px;font-size:13px;cursor:pointer;margin-top:10px;">Save entry</button>
+          <textarea placeholder="What happened? How did it feel?" value="{{ newEntryText }}" onChange="{{ onNewEntryTextChange }}" rows="3" aria-label="New diary entry" style="width:100%;border:1px solid oklch(88% 0.015 55);border-radius:6px;padding:12px;font-size:14px;box-sizing:border-box;resize:vertical;font-family:'Inter',sans-serif;"></textarea>
+          <button type="button" onClick="{{ addDiaryEntry }}" style="border:1px solid oklch(80% 0.02 50);background:none;color:oklch(40% 0.02 40);padding:8px 16px;border-radius:16px;font-size:13px;cursor:pointer;margin-top:10px;">Save entry</button>
         </div>
 
         <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
-          <button onClick="{{ openCompile }}" style="border:1px solid oklch(70% 0.05 35);background:oklch(93% 0.03 35);color:oklch(30% 0.05 30);padding:10px 18px;border-radius:16px;font-size:13px;cursor:pointer;">Compile "Our Story" keepsake</button>
+          <button type="button" onClick="{{ openCompile }}" style="border:1px solid oklch(70% 0.05 35);background:oklch(93% 0.03 35);color:oklch(30% 0.05 30);padding:10px 18px;border-radius:16px;font-size:13px;cursor:pointer;">Compile "Our Story" keepsake</button>
         </div>
 
         <sc-for list="{{ diaryRows }}" as="e" hint-placeholder-count="3">
@@ -239,23 +392,23 @@
               <div style="font-size:12.5px;color:oklch(55% 0.02 40);">{{ e.dateLabel }} &middot; {{ e.mood }}</div>
               <div style="display:flex;gap:10px;align-items:center;">
                 <label style="font-size:12px;color:oklch(50% 0.02 40);display:flex;gap:5px;align-items:center;">
-                  <input type="checkbox" checked="{{ e.shared }}" onChange="{{ e.onSharedChange }}" /> include in Our Story
+                  <input type="checkbox" checked="{{ e.shared }}" onChange="{{ e.onSharedChange }}" aria-label="{{ e.sharedLabel }}" /> include in Our Story
                 </label>
-                <button onClick="{{ e.onRemove }}" style="border:none;background:none;color:oklch(60% 0.02 40);cursor:pointer;font-size:16px;">&times;</button>
+                <button type="button" class="remove-btn" onClick="{{ e.onRemove }}" aria-label="{{ e.removeLabel }}" title="{{ e.removeLabel }}">&times;</button>
               </div>
             </div>
-            <div style="font-size:14.5px;line-height:1.6;color:oklch(32% 0.02 40);">{{ e.text }}</div>
+            <div class="longtext" style="font-size:14.5px;line-height:1.6;color:oklch(32% 0.02 40);">{{ e.text }}</div>
           </div>
         </sc-for>
       </div>
     </sc-if>
 
     <sc-if value="{{ isVows }}" hint-placeholder-val="{{ false }}">
-      <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;">
-        <div style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:28px;">
-          <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <div class="vows-grid">
+        <div class="card" style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:28px;">
+          <div role="group" aria-label="Vow tone" style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
             <sc-for list="{{ toneOptions }}" as="tn" hint-placeholder-count="4">
-              <button onClick="{{ tn.onClick }}" style="border:none;background:{{ tn.bg }};color:{{ tn.color }};padding:8px 14px;border-radius:16px;font-size:12.5px;cursor:pointer;">{{ tn.label }}</button>
+              <button type="button" onClick="{{ tn.onClick }}" aria-pressed="{{ tn.current }}" style="border:none;background:{{ tn.bg }};color:{{ tn.color }};padding:8px 14px;border-radius:16px;font-size:12.5px;cursor:pointer;">{{ tn.label }}</button>
             </sc-for>
           </div>
           <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14.5px;color:oklch(45% 0.02 40);margin-bottom:24px;">{{ toneNote }}</div>
@@ -263,29 +416,29 @@
           <div style="margin-bottom:22px;">
             <div style="font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.06 40);margin-bottom:6px;">Opening line</div>
             <div style="font-size:12.5px;color:oklch(55% 0.02 40);margin-bottom:8px;">A first line that sounds like you, not a wedding.</div>
-            <textarea value="{{ vowsOpening }}" onChange="{{ onOpeningChange }}" rows="2" style="width:100%;border:1px solid oklch(88% 0.015 55);border-radius:6px;padding:12px;font-size:14px;box-sizing:border-box;resize:vertical;font-family:'Inter',sans-serif;"></textarea>
+            <textarea id="vows-opening" value="{{ vowsOpening }}" onChange="{{ onOpeningChange }}" rows="2" aria-label="Opening line" style="width:100%;border:1px solid oklch(88% 0.015 55);border-radius:6px;padding:12px;font-size:14px;box-sizing:border-box;resize:vertical;font-family:'Inter',sans-serif;"></textarea>
           </div>
           <div style="margin-bottom:22px;">
             <div style="font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.06 40);margin-bottom:6px;">A shared memory</div>
             <div style="font-size:12.5px;color:oklch(55% 0.02 40);margin-bottom:8px;">What's a moment you knew this was it?</div>
-            <textarea value="{{ vowsMemory }}" onChange="{{ onMemoryChange }}" rows="3" style="width:100%;border:1px solid oklch(88% 0.015 55);border-radius:6px;padding:12px;font-size:14px;box-sizing:border-box;resize:vertical;font-family:'Inter',sans-serif;"></textarea>
+            <textarea id="vows-memory" value="{{ vowsMemory }}" onChange="{{ onMemoryChange }}" rows="3" aria-label="A shared memory" style="width:100%;border:1px solid oklch(88% 0.015 55);border-radius:6px;padding:12px;font-size:14px;box-sizing:border-box;resize:vertical;font-family:'Inter',sans-serif;"></textarea>
           </div>
           <div style="margin-bottom:22px;">
             <div style="font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.06 40);margin-bottom:6px;">Your promises</div>
             <div style="font-size:12.5px;color:oklch(55% 0.02 40);margin-bottom:8px;">What promise matters most to you, day to day?</div>
-            <textarea value="{{ vowsPromises }}" onChange="{{ onPromisesChange }}" rows="4" style="width:100%;border:1px solid oklch(88% 0.015 55);border-radius:6px;padding:12px;font-size:14px;box-sizing:border-box;resize:vertical;font-family:'Inter',sans-serif;"></textarea>
+            <textarea id="vows-promises" value="{{ vowsPromises }}" onChange="{{ onPromisesChange }}" rows="4" aria-label="Your promises" style="width:100%;border:1px solid oklch(88% 0.015 55);border-radius:6px;padding:12px;font-size:14px;box-sizing:border-box;resize:vertical;font-family:'Inter',sans-serif;"></textarea>
           </div>
           <div>
             <div style="font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.06 40);margin-bottom:6px;">Closing line</div>
-            <textarea value="{{ vowsClosing }}" onChange="{{ onClosingChange }}" rows="2" style="width:100%;border:1px solid oklch(88% 0.015 55);border-radius:6px;padding:12px;font-size:14px;box-sizing:border-box;resize:vertical;font-family:'Inter',sans-serif;"></textarea>
+            <textarea id="vows-closing" value="{{ vowsClosing }}" onChange="{{ onClosingChange }}" rows="2" aria-label="Closing line" style="width:100%;border:1px solid oklch(88% 0.015 55);border-radius:6px;padding:12px;font-size:14px;box-sizing:border-box;resize:vertical;font-family:'Inter',sans-serif;"></textarea>
           </div>
         </div>
 
-        <div style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:24px;align-self:start;">
-          <div style="font-size:12.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(55% 0.06 40);margin-bottom:10px;">Word count</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:{{ vowsColor }};">{{ vowsWordCount }}</div>
-          <div style="font-size:12.5px;color:oklch(45% 0.02 40);margin-top:6px;margin-bottom:16px;">{{ vowsNote }}</div>
-          <div style="font-size:12px;color:oklch(55% 0.02 40);">~{{ vowsSpeakTime }} spoken aloud</div>
+        <div class="card" style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:24px;align-self:start;">
+          <div id="vows-word-count-label" style="font-size:12.5px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(55% 0.06 40);margin-bottom:10px;">Word count</div>
+          <div id="vows-word-count" aria-labelledby="vows-word-count-label" style="font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:{{ vowsColor }};">{{ vowsWordCount }}</div>
+          <div id="vows-word-count-note" style="font-size:12.5px;color:oklch(45% 0.02 40);margin-top:6px;margin-bottom:16px;">{{ vowsNote }}</div>
+          <div id="vows-speak-time" style="font-size:12px;color:oklch(55% 0.02 40);">~{{ vowsSpeakTime }} spoken aloud</div>
         </div>
       </div>
     </sc-if>
@@ -295,19 +448,19 @@
 </sc-if>
 
 <sc-if value="{{ showCompile }}" hint-placeholder-val="{{ false }}">
-  <div style="max-width:720px;margin:0 auto;padding:60px 32px;">
-    <div style="display:flex;justify-content:space-between;margin-bottom:32px;">
-      <button onClick="{{ closeCompile }}" style="border:1px solid oklch(80% 0.02 50);background:none;color:oklch(40% 0.02 40);padding:9px 16px;border-radius:16px;font-size:13px;cursor:pointer;">&larr; Back</button>
-      <button onClick="{{ printCompiled }}" style="border:1px solid oklch(70% 0.05 35);background:oklch(93% 0.03 35);color:oklch(30% 0.05 30);padding:9px 18px;border-radius:16px;font-size:13px;cursor:pointer;">Print / Save as PDF</button>
+  <div class="keepsake">
+    <div style="display:flex;justify-content:space-between;margin-bottom:32px;gap:12px;flex-wrap:wrap;">
+      <button type="button" onClick="{{ closeCompile }}" style="border:1px solid oklch(80% 0.02 50);background:none;color:oklch(40% 0.02 40);padding:9px 16px;border-radius:16px;font-size:13px;cursor:pointer;">&larr; Back</button>
+      <button type="button" onClick="{{ printCompiled }}" style="border:1px solid oklch(70% 0.05 35);background:oklch(93% 0.03 35);color:oklch(30% 0.05 30);padding:9px 18px;border-radius:16px;font-size:13px;cursor:pointer;">Print / Save as PDF</button>
     </div>
     <div style="text-align:center;margin-bottom:48px;">
-      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:40px;color:oklch(28% 0.05 30);">{{ coupleTitle }}</div>
+      <div class="longtext" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(28px,8vw,40px);color:oklch(28% 0.05 30);">{{ coupleTitle }}</div>
       <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:oklch(55% 0.02 40);margin-top:10px;">Our Story</div>
     </div>
     <sc-for list="{{ compiledEntries }}" as="e" hint-placeholder-count="3">
       <div style="margin-bottom:30px;">
         <div style="font-size:12px;color:oklch(55% 0.02 40);margin-bottom:6px;">{{ e.dateLabel }}</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;line-height:1.7;color:oklch(28% 0.03 40);">{{ e.text }}</div>
+        <div class="longtext" style="font-family:'Cormorant Garamond',serif;font-size:18px;line-height:1.7;color:oklch(28% 0.03 40);">{{ e.text }}</div>
       </div>
     </sc-for>
     <sc-if value="{{ compiledEmpty }}" hint-placeholder-val="{{ false }}">
@@ -321,20 +474,20 @@ const STORAGE_KEY = 'owp_data_v1';
 
 const WISDOM = {
   general: [
-    "The best marriages aren't built on grand gestures \u2014 they're built on choosing each other, quietly, every single day.",
+    "The best marriages aren't built on grand gestures — they're built on choosing each other, quietly, every single day.",
     "Love is deciding, over and over, that this person's happiness matters as much as your own.",
     "The vows matter less than the version of you that keeps them, twenty years from now.",
-    "Family isn't who you're born to \u2014 it's who you choose to build a life with, on purpose.",
+    "Family isn't who you're born to — it's who you choose to build a life with, on purpose.",
     "Say the hard thing gently. Say the small thing often. That's most of what love actually is.",
-    "The best partners aren't the ones who never disappoint you \u2014 they're the ones who stay to repair it.",
+    "The best partners aren't the ones who never disappoint you — they're the ones who stay to repair it.",
     "Plan the wedding together. It's practice for planning the life.",
     "You are not merging two lives. You're building a third one, made of both.",
   ],
   budgetStress: [
-    "Budgets are just love letters written in numbers \u2014 they say what you're willing to sacrifice for.",
+    "Budgets are just love letters written in numbers — they say what you're willing to sacrifice for.",
     "Money fights are rarely about money. They're about what you each think safety looks like.",
     "A wedding that costs less but starts a marriage without debt is the better deal, every time.",
-    "The guest list you can't afford isn't the wedding you're actually planning \u2014 the one you can is.",
+    "The guest list you can't afford isn't the wedding you're actually planning — the one you can is.",
   ],
   rsvpComplete: [
     "Now you know exactly who's showing up for you. Let that be enough for tonight.",
@@ -349,15 +502,136 @@ const WISDOM = {
   ],
 };
 
+const GUEST_STATUSES = ['Pending', 'Yes', 'No'];
+const VENDOR_STATUSES = ['Inquiring', 'Deposit Paid', 'Contracted', 'Paid in Full'];
+const VOWS_TONES = ['Heartfelt', 'Funny', 'Traditional', 'Short'];
+const DEPOSIT_PAID_STATUSES = ['Deposit Paid', 'Contracted', 'Paid in Full'];
+
 function daysBetween(a, b) { return Math.ceil((b - a) / 86400000); }
 function fmtDate(d) { return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
-function fmtMoney(n) { return '$' + Math.round(n).toLocaleString(); }
+function fmtMoney(n) { return '$' + Math.round(num(n)).toLocaleString(); }
 function seededPick(arr, seed) { return arr[Math.abs(seed) % arr.length]; }
+function num(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
+function isIsoDate(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(new Date(s + 'T00:00:00').getTime()); }
+function startOfToday() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function todayIso() { const n = new Date(); return new Date(n.getTime() - n.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
+function daysUntil(iso) { return isIsoDate(iso) ? Math.round((new Date(iso + 'T00:00:00') - startOfToday()) / 86400000) : null; }
+/** Names match if they differ only by case or by surrounding/repeated whitespace. */
+function normName(s) { return String(s == null ? '' : s).trim().replace(/\s+/g, ' ').toLowerCase(); }
+function tidyName(s) { return String(s == null ? '' : s).trim().replace(/\s+/g, ' '); }
+/** Quote a CSV cell, neutralising anything a spreadsheet would run as a formula. */
+function csvCell(v) {
+  let s = v == null ? '' : String(v);
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+function listPhrase(items) {
+  if (items.length <= 1) return items[0] || '';
+  if (items.length === 2) return items[0] + ' and ' + items[1];
+  return items.slice(0, -1).join(', ') + ', and ' + items[items.length - 1];
+}
+function clone(v) { return JSON.parse(JSON.stringify(v)); }
+
+/** A deposit counts as paid once the vendor is past 'Inquiring'; the final
+ *  payment only counts as paid at 'Paid in Full'. */
+function paymentFlag(iso, paid) {
+  if (paid || !isIsoDate(iso)) return null;
+  const left = daysUntil(iso);
+  if (left < 0) return 'overdue';
+  if (left <= 14) return 'soon';
+  return null;
+}
+
+/**
+ * Returns a clean, fully-typed copy of `raw` when it is a complete backup,
+ * or null when anything is missing or the wrong type. Callers must treat null
+ * as "leave the current data alone" — never partially apply a bad backup.
+ */
+function validateData(raw) {
+  const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
+  if (!isObj(raw)) return null;
+
+  const p = raw.profile;
+  if (!isObj(p)) return null;
+  if (typeof p.partnerA !== 'string' || typeof p.partnerB !== 'string') return null;
+  if (!isIsoDate(p.date)) return null;
+  if (p.vibe != null && typeof p.vibe !== 'string') return null;
+  if (p.story != null && typeof p.story !== 'string') return null;
+  if (p.budgetTotal != null && !Number.isFinite(Number(p.budgetTotal))) return null;
+
+  if (!isObj(raw.budget) || !Array.isArray(raw.budget.categories)) return null;
+  const categories = [];
+  for (const c of raw.budget.categories) {
+    if (!isObj(c) || typeof c.name !== 'string') return null;
+    if (!Number.isFinite(Number(c.planned)) || !Number.isFinite(Number(c.spent))) return null;
+    categories.push({ name: c.name, planned: num(c.planned), spent: num(c.spent) });
+  }
+
+  if (!Array.isArray(raw.guests)) return null;
+  const guests = [];
+  for (const g of raw.guests) {
+    if (!isObj(g) || typeof g.name !== 'string') return null;
+    if (GUEST_STATUSES.indexOf(g.status) === -1) return null;
+    if (g.meal != null && typeof g.meal !== 'string') return null;
+    if (g.plusOne != null && typeof g.plusOne !== 'boolean') return null;
+    guests.push({ name: g.name, status: g.status, meal: g.meal || '', plusOne: g.status !== 'No' && g.plusOne === true });
+  }
+
+  if (!Array.isArray(raw.vendors)) return null;
+  const vendors = [];
+  for (const v of raw.vendors) {
+    if (!isObj(v) || typeof v.name !== 'string') return null;
+    if (VENDOR_STATUSES.indexOf(v.status) === -1) return null;
+    if (v.category != null && typeof v.category !== 'string') return null;
+    if (v.contact != null && typeof v.contact !== 'string') return null;
+    for (const k of ['deposit', 'final']) {
+      if (v[k] == null || v[k] === '') continue;
+      if (!isIsoDate(v[k])) return null;
+    }
+    vendors.push({ name: v.name, category: v.category || '', contact: v.contact || '', status: v.status,
+      deposit: v.deposit || '', final: v.final || '' });
+  }
+
+  if (!Array.isArray(raw.timeline)) return null;
+  const timeline = [];
+  for (const ph of raw.timeline) {
+    if (!isObj(ph) || typeof ph.phase !== 'string' || !Array.isArray(ph.tasks)) return null;
+    const tasks = [];
+    for (const t of ph.tasks) {
+      if (!isObj(t) || typeof t.text !== 'string' || typeof t.done !== 'boolean') return null;
+      tasks.push({ text: t.text, done: t.done, critical: t.critical === true });
+    }
+    timeline.push({ phase: ph.phase, tasks });
+  }
+
+  if (!Array.isArray(raw.diary)) return null;
+  const diary = [];
+  for (const e of raw.diary) {
+    if (!isObj(e) || !isIsoDate(e.date) || typeof e.text !== 'string') return null;
+    if (e.mood != null && typeof e.mood !== 'string') return null;
+    if (e.shared != null && typeof e.shared !== 'boolean') return null;
+    diary.push({ date: e.date, text: e.text, mood: e.mood || 'Reflective', shared: e.shared === true });
+  }
+
+  const vw = raw.vows;
+  if (!isObj(vw)) return null;
+  for (const k of ['opening', 'memory', 'promises', 'closing']) {
+    if (vw[k] != null && typeof vw[k] !== 'string') return null;
+  }
+  const vows = { tone: VOWS_TONES.indexOf(vw.tone) === -1 ? 'Heartfelt' : vw.tone,
+    opening: vw.opening || '', memory: vw.memory || '', promises: vw.promises || '', closing: vw.closing || '' };
+
+  return {
+    profile: { partnerA: p.partnerA, partnerB: p.partnerB, date: p.date, budgetTotal: num(p.budgetTotal),
+      vibe: p.vibe || '', story: p.story || '' },
+    budget: { categories }, guests, vendors, timeline, diary, vows,
+  };
+}
 
 function defaultData() {
   return {
     profile: { partnerA: 'Sarah', partnerB: 'Mike', date: '2027-06-12', budgetTotal: 35000, vibe: 'cozy backyard',
-      story: "We met at a friend's rooftop party in the rain and didn't leave for three hours. Two years, one rescue dog, and a lot of very specific opinions about pasta later \u2014 we're doing this." },
+      story: "We met at a friend's rooftop party in the rain and didn't leave for three hours. Two years, one rescue dog, and a lot of very specific opinions about pasta later — we're doing this." },
     budget: { categories: [
       { name: 'Venue', planned: 12000, spent: 12000 },
       { name: 'Catering', planned: 9000, spent: 7400 },
@@ -372,7 +646,7 @@ function defaultData() {
       { name: 'Grace Lin', status: 'Yes', meal: 'Vegetarian', plusOne: true },
       { name: 'Tom Reyes', status: 'Yes', meal: 'Chicken', plusOne: false },
       { name: 'Priya Nair', status: 'Pending', meal: '', plusOne: false },
-      { name: 'The Whitfields', status: 'No', meal: '', plusOne: true },
+      { name: 'The Whitfields', status: 'No', meal: '', plusOne: false },
       { name: 'Sam Okoye', status: 'Yes', meal: 'Fish', plusOne: false },
     ],
     vendors: [
@@ -421,34 +695,87 @@ function defaultData() {
     ],
     diary: [
       { date: '2026-04-02', text: "Booked Willow Creek today. We cried a little in the parking lot after. This is really happening.", mood: 'Joyful', shared: true },
-      { date: '2026-06-14', text: "Rough budget talk tonight. We're okay \u2014 we just needed to say the real numbers out loud instead of guessing.", mood: 'Overwhelmed', shared: false },
+      { date: '2026-06-14', text: "Rough budget talk tonight. We're okay — we just needed to say the real numbers out loud instead of guessing.", mood: 'Overwhelmed', shared: false },
     ],
     vows: { tone: 'Heartfelt', opening: '', memory: '', promises: '', closing: '' },
   };
 }
 
+/** A couple's own planner: the checklist stays, the sample content doesn't. */
+function freshData(partnerA, partnerB, date, vibe, budgetTotal) {
+  const d = defaultData();
+  d.profile = { partnerA, partnerB, date, budgetTotal: num(budgetTotal), vibe: vibe || '', story: '' };
+  d.budget.categories = d.budget.categories.map(c => ({ name: c.name, planned: 0, spent: 0 }));
+  d.guests = [];
+  d.vendors = [];
+  d.diary = [];
+  d.timeline = d.timeline.map(p => ({ phase: p.phase, tasks: p.tasks.map(t => ({ text: t.text, done: false, critical: t.critical })) }));
+  return d;
+}
+
 class Component extends DCLogic {
   state = { data: defaultData(), activeTab: 'home', showCompile: false, copyLabel: 'Copy link', newGuestName: '',
-    newEntryDate: new Date().toISOString().slice(0, 10), newEntryMood: 'Joyful', newEntryText: '' };
+    newEntryDate: todayIso(), newEntryMood: 'Joyful', newEntryText: '',
+    saveFailed: false, loadFailed: false, needsSetup: false, undo: null, guestNotice: '', setupError: '',
+    setup: { partnerA: '', partnerB: '', date: '', vibe: '', budgetTotal: '' } };
 
   componentDidMount() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) this.setState({ data: JSON.parse(saved) });
-    } catch (e) {}
+    let saved = null;
+    try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) { saved = null; }
+    if (saved == null) { this.setState({ needsSetup: true }); return; }
+    let parsed = null;
+    try { parsed = JSON.parse(saved); } catch (e) { parsed = null; }
+    const clean = validateData(parsed);
+    if (clean) this.setState({ data: clean });
+    else this.setState({ loadFailed: true });
   }
 
-  save(data) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
-  update(fn) { this.setState(s => { const d = fn(JSON.parse(JSON.stringify(s.data))); this.save(d); return { data: d }; }); }
+  /** Persist without throwing. Returns false when the browser refused to save. */
+  save(data) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /** Apply a change in memory first, then try to persist it. A failed save never
+   *  discards the change — it raises a visible warning instead. */
+  update(fn) {
+    this.setState(s => {
+      const d = fn(clone(s.data));
+      return { data: d, saveFailed: !this.save(d), loadFailed: false };
+    });
+  }
+
+  /** Remove a row behind a confirmation, keeping one step of undo. */
+  removeRow(getList, index, label) {
+    const list = getList(this.state.data);
+    if (!list || index < 0 || index >= list.length) return;
+    const what = tidyName(label) || 'this item';
+    if (!window.confirm('Remove ' + what + '? You can undo this straight after.')) return;
+    const snapshot = clone(list[index]);
+    this.update(dd => { getList(dd).splice(index, 1); return dd; });
+    this.setState({ undo: { label: what, restore: (dd) => { getList(dd).splice(index, 0, snapshot); return dd; } } });
+  }
 
   computeHealth(data) {
     const allTasks = data.timeline.flatMap(p => p.tasks);
     const total = allTasks.length, done = allTasks.filter(t => t.done).length;
     let score = total ? Math.round((done / total) * 100) : 100;
     const gaps = [];
+    // A missed payment date is the most time-critical gap, so it leads the list.
+    const overduePayments = data.vendors.filter(v => paymentFlag(v.deposit, DEPOSIT_PAID_STATUSES.indexOf(v.status) !== -1) === 'overdue'
+      || paymentFlag(v.final, v.status === 'Paid in Full') === 'overdue');
+    if (overduePayments.length) { score -= 5 * overduePayments.length; gaps.push('Payment overdue for ' + overduePayments.map(v => v.name).join(', ')); }
     allTasks.forEach(t => { if (t.critical && !t.done) { gaps.push(t.text); score -= 4; } });
-    const over = data.budget.categories.filter(c => c.spent > c.planned);
+    const cats = data.budget.categories;
+    const over = cats.filter(c => num(c.planned) > 0 && num(c.spent) > num(c.planned));
+    const unplanned = cats.filter(c => num(c.planned) === 0 && num(c.spent) > 0);
     if (over.length) { score -= 5 * over.length; gaps.push('Budget running over on ' + over.map(c => c.name).join(', ')); }
+    if (unplanned.length) { score -= 5 * unplanned.length; gaps.push('Unplanned spending on ' + unplanned.map(c => c.name).join(', ')); }
+    if (cats.reduce((a, c) => a + num(c.planned), 0) === 0) gaps.push('No budget planned yet');
     const pending = data.guests.filter(g => g.status === 'Pending').length;
     if (pending) gaps.push(pending + ' guest RSVP' + (pending > 1 ? 's' : '') + ' still pending');
     return { score: Math.max(0, Math.min(100, score)), gaps };
@@ -457,18 +784,26 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state, d = s.data;
     const today = new Date();
-    const wedding = new Date(d.profile.date + 'T00:00:00');
-    const daysLeft = Math.max(0, daysBetween(today, wedding));
+    const hasDate = isIsoDate(d.profile.date);
+    const daysLeft = hasDate ? Math.max(0, daysBetween(today, new Date(d.profile.date + 'T00:00:00'))) : null;
     const { score, gaps } = this.computeHealth(d);
     const healthColor = score >= 75 ? 'oklch(50% 0.09 145)' : score >= 45 ? 'oklch(65% 0.1 70)' : 'oklch(58% 0.13 30)';
 
     const venueBooked = d.timeline.flatMap(p => p.tasks).some(t => t.text === 'Book your venue' && t.done);
-    const overBudgetCats = d.budget.categories.filter(c => c.spent > c.planned);
+
+    const cats = d.budget.categories;
+    const totalPlanned = cats.reduce((a, c) => a + num(c.planned), 0);
+    const totalSpent = cats.reduce((a, c) => a + num(c.spent), 0);
+    const overBudgetCats = cats.filter(c => num(c.planned) > 0 && num(c.spent) > num(c.planned));
+    const unplannedCats = cats.filter(c => num(c.planned) === 0 && num(c.spent) > 0);
+    const budgetNotSet = totalPlanned === 0;
+    const budgetOnTrack = !budgetNotSet && overBudgetCats.length === 0 && unplannedCats.length === 0;
+
     const rsvpComplete = d.guests.length > 0 && d.guests.every(g => g.status !== 'Pending');
 
     let wisdomPool = WISDOM.general;
-    if (daysLeft <= 14) wisdomPool = WISDOM.weekBefore;
-    else if (overBudgetCats.length) wisdomPool = WISDOM.budgetStress;
+    if (hasDate && daysLeft <= 14) wisdomPool = WISDOM.weekBefore;
+    else if (overBudgetCats.length || unplannedCats.length) wisdomPool = WISDOM.budgetStress;
     else if (rsvpComplete) wisdomPool = WISDOM.rsvpComplete;
     else if (venueBooked) wisdomPool = WISDOM.general.concat(WISDOM.venueBooked);
     const wisdomLine = seededPick(wisdomPool, today.getDate() + today.getMonth());
@@ -478,44 +813,74 @@ class Component extends DCLogic {
       ['vendors', 'Vendors'], ['diary', 'Diary'], ['vows', 'Vows'],
     ];
     const tabs = tabDefs.map(([key, label]) => ({
-      label, onClick: () => this.setState({ activeTab: key }),
+      label, key, onClick: () => this.setState({ activeTab: key, undo: null, guestNotice: '' }),
+      current: s.activeTab === key ? 'page' : undefined,
       bg: s.activeTab === key ? 'oklch(30% 0.06 30)' : 'transparent',
       color: s.activeTab === key ? 'oklch(98% 0.01 70)' : 'oklch(40% 0.02 40)',
     }));
 
-    const totalPlanned = d.budget.categories.reduce((a, c) => a + c.planned, 0);
-    const totalSpent = d.budget.categories.reduce((a, c) => a + c.spent, 0);
-    const maxCat = Math.max(1, ...d.budget.categories.map(c => Math.max(c.planned, c.spent)));
-    const budgetRows = d.budget.categories.map((c, i) => ({
+    const maxCat = Math.max(1, ...cats.map(c => Math.max(num(c.planned), num(c.spent))));
+    const budgetRows = cats.map((c, i) => ({
       name: c.name, planned: c.planned, spent: c.spent,
-      barWidth: Math.min(100, (c.spent / maxCat) * 100) + '%',
-      barColor: c.spent > c.planned ? 'oklch(58% 0.13 30)' : 'oklch(50% 0.08 35)',
+      barWidth: Math.min(100, (num(c.spent) / maxCat) * 100) + '%',
+      barColor: num(c.spent) > num(c.planned) ? 'oklch(58% 0.13 30)' : 'oklch(50% 0.08 35)',
+      note: num(c.planned) === 0 && num(c.spent) > 0 ? 'Unplanned — ' + fmtMoney(c.spent) + ' spent with nothing planned'
+        : num(c.planned) > 0 && num(c.spent) > num(c.planned) ? fmtMoney(num(c.spent) - num(c.planned)) + ' over plan' : '',
+      showNote: (num(c.planned) === 0 && num(c.spent) > 0) || (num(c.planned) > 0 && num(c.spent) > num(c.planned)),
+      nameLabel: 'Category name', plannedLabel: 'Planned amount for ' + (c.name || 'this category'),
+      spentLabel: 'Spent amount for ' + (c.name || 'this category'),
+      removeLabel: 'Remove budget category ' + (c.name || 'untitled'),
       onNameChange: (e) => this.update(dd => { dd.budget.categories[i].name = e.target.value; return dd; }),
-      onPlannedChange: (e) => this.update(dd => { dd.budget.categories[i].planned = Number(e.target.value) || 0; return dd; }),
-      onSpentChange: (e) => this.update(dd => { dd.budget.categories[i].spent = Number(e.target.value) || 0; return dd; }),
-      onRemove: () => this.update(dd => { dd.budget.categories.splice(i, 1); return dd; }),
+      onPlannedChange: (e) => this.update(dd => { dd.budget.categories[i].planned = num(e.target.value); return dd; }),
+      onSpentChange: (e) => this.update(dd => { dd.budget.categories[i].spent = num(e.target.value); return dd; }),
+      onRemove: () => this.removeRow(dd => dd.budget.categories, i, c.name || 'this category'),
     }));
+
+    const nameCounts = {};
+    d.guests.forEach(g => { const k = normName(g.name); if (k) nameCounts[k] = (nameCounts[k] || 0) + 1; });
+    const guestYes = d.guests.filter(g => g.status === 'Yes');
+    const confirmedPlusOnes = guestYes.filter(g => g.plusOne === true).length;
+    const guestAttending = guestYes.length + confirmedPlusOnes;
 
     const guestRows = d.guests.map((g, i) => ({
-      name: g.name, status: g.status, meal: g.meal, plusOne: g.plusOne,
+      name: g.name, status: g.status, meal: g.meal, plusOne: g.status !== 'No' && g.plusOne === true,
+      plusOneDisabled: g.status === 'No',
+      plusOneColor: g.status === 'No' ? 'oklch(70% 0.01 40)' : 'oklch(45% 0.02 40)',
+      isDuplicate: nameCounts[normName(g.name)] > 1,
+      nameLabel: 'Guest name', statusLabel: 'RSVP for ' + (g.name || 'this guest'),
+      mealLabel: 'Meal for ' + (g.name || 'this guest'),
+      plusOneLabel: 'Plus-one attending with ' + (g.name || 'this guest'),
+      removeLabel: 'Remove guest ' + (g.name || 'untitled'),
       onNameChange: (e) => this.update(dd => { dd.guests[i].name = e.target.value; return dd; }),
-      onStatusChange: (e) => this.update(dd => { dd.guests[i].status = e.target.value; return dd; }),
+      onStatusChange: (e) => this.update(dd => {
+        const v = GUEST_STATUSES.indexOf(e.target.value) === -1 ? 'Pending' : e.target.value;
+        dd.guests[i].status = v;
+        if (v === 'No') dd.guests[i].plusOne = false;
+        return dd;
+      }),
       onMealChange: (e) => this.update(dd => { dd.guests[i].meal = e.target.value; return dd; }),
-      onPlusOneChange: (e) => this.update(dd => { dd.guests[i].plusOne = e.target.checked; return dd; }),
-      onRemove: () => this.update(dd => { dd.guests.splice(i, 1); return dd; }),
+      onPlusOneChange: (e) => this.update(dd => { dd.guests[i].plusOne = dd.guests[i].status !== 'No' && e.target.checked; return dd; }),
+      onRemove: () => this.removeRow(dd => dd.guests, i, g.name || 'this guest'),
     }));
+    const duplicateNames = Object.keys(nameCounts).filter(k => nameCounts[k] > 1).length;
 
     const vendorRows = d.vendors.map((v, i) => {
-      const dueSoon = [v.deposit, v.final].some(dt => dt && daysBetween(today, new Date(dt + 'T00:00:00')) >= 0 && daysBetween(today, new Date(dt + 'T00:00:00')) <= 14);
+      const depositFlag = paymentFlag(v.deposit, DEPOSIT_PAID_STATUSES.indexOf(v.status) !== -1);
+      const finalFlag = paymentFlag(v.final, v.status === 'Paid in Full');
       return {
-        name: v.name, category: v.category, contact: v.contact, status: v.status, deposit: v.deposit, final: v.final, dueSoon,
+        name: v.name, category: v.category, contact: v.contact, status: v.status, deposit: v.deposit, final: v.final,
+        depositSoon: depositFlag === 'soon', depositOverdue: depositFlag === 'overdue',
+        finalSoon: finalFlag === 'soon', finalOverdue: finalFlag === 'overdue',
+        nameLabel: 'Vendor name', categoryLabel: 'Category for ' + (v.name || 'this vendor'),
+        contactLabel: 'Contact for ' + (v.name || 'this vendor'), statusLabel: 'Booking status for ' + (v.name || 'this vendor'),
+        removeLabel: 'Remove vendor ' + (v.name || 'untitled'),
         onNameChange: (e) => this.update(dd => { dd.vendors[i].name = e.target.value; return dd; }),
         onCategoryChange: (e) => this.update(dd => { dd.vendors[i].category = e.target.value; return dd; }),
         onContactChange: (e) => this.update(dd => { dd.vendors[i].contact = e.target.value; return dd; }),
         onStatusChange: (e) => this.update(dd => { dd.vendors[i].status = e.target.value; return dd; }),
         onDepositChange: (e) => this.update(dd => { dd.vendors[i].deposit = e.target.value; return dd; }),
         onFinalChange: (e) => this.update(dd => { dd.vendors[i].final = e.target.value; return dd; }),
-        onRemove: () => this.update(dd => { dd.vendors.splice(i, 1); return dd; }),
+        onRemove: () => this.removeRow(dd => dd.vendors, i, v.name || 'this vendor'),
       };
     });
 
@@ -532,83 +897,171 @@ class Component extends DCLogic {
       };
     });
 
-    const diaryRows = d.diary.slice().sort((a, b) => b.date.localeCompare(a.date)).map((e) => {
-      const i = d.diary.indexOf(e);
-      return {
+    const diaryRows = d.diary.map((e, i) => ({ e, i }))
+      .sort((a, b) => b.e.date.localeCompare(a.e.date))
+      .map(({ e, i }) => ({
         dateLabel: fmtDate(e.date), text: e.text, mood: e.mood, shared: e.shared,
+        sharedLabel: 'Include the ' + fmtDate(e.date) + ' entry in Our Story',
+        removeLabel: 'Remove diary entry from ' + fmtDate(e.date),
         onSharedChange: (ev) => this.update(dd => { dd.diary[i].shared = ev.target.checked; return dd; }),
-        onRemove: () => this.update(dd => { dd.diary.splice(i, 1); return dd; }),
-      };
-    });
+        onRemove: () => this.removeRow(dd => dd.diary, i, 'the entry from ' + fmtDate(e.date)),
+      }));
 
-    const toneList = ['Heartfelt', 'Funny', 'Traditional', 'Short'];
-    const toneNotes = { Heartfelt: 'Keep it warm and sincere \u2014 say the true thing.', Funny: "A little humor never hurts, but let one line be dead serious.",
-      Traditional: 'Classic and steady \u2014 built to be read aloud calmly.', Short: 'Under a minute. Every word has to earn its place.' };
-    const toneOptions = toneList.map(tn => ({
+    const toneNotes = { Heartfelt: 'Keep it warm and sincere — say the true thing.', Funny: "A little humor never hurts, but let one line be dead serious.",
+      Traditional: 'Classic and steady — built to be read aloud calmly.', Short: 'Under a minute. Every word has to earn its place.' };
+    const toneOptions = VOWS_TONES.map(tn => ({
       label: tn, onClick: () => this.update(dd => { dd.vows.tone = tn; return dd; }),
+      current: d.vows.tone === tn ? 'true' : 'false',
       bg: d.vows.tone === tn ? 'oklch(30% 0.06 30)' : 'oklch(93% 0.015 55)',
       color: d.vows.tone === tn ? 'oklch(98% 0.01 70)' : 'oklch(40% 0.02 40)',
     }));
     const vowsWords = (d.vows.opening + ' ' + d.vows.memory + ' ' + d.vows.promises + ' ' + d.vows.closing).trim().split(/\s+/).filter(Boolean).length;
     const vowsColor = vowsWords < 120 ? 'oklch(55% 0.02 40)' : vowsWords <= 260 ? 'oklch(50% 0.09 145)' : 'oklch(65% 0.1 70)';
-    const vowsNote = vowsWords < 120 ? "Still finding your words \u2014 keep going." : vowsWords <= 260 ? 'That sounds about right for 1\u20132 minutes.' : 'Getting long \u2014 maybe trim it down.';
+    const vowsNote = vowsWords < 120 ? "Still finding your words — keep going." : vowsWords <= 260 ? 'That sounds about right for 1–2 minutes.' : 'Getting long — maybe trim it down.';
     const speakSec = Math.round((vowsWords / 130) * 60);
     const vowsSpeakTime = speakSec < 60 ? speakSec + ' sec' : Math.round(speakSec / 60 * 10) / 10 + ' min';
 
     const compiledList = d.diary.filter(e => e.shared).sort((a, b) => a.date.localeCompare(b.date)).map(e => ({ dateLabel: fmtDate(e.date), text: e.text }));
 
+    const rsvpSlug = (tidyName(d.profile.partnerA) || 'partner-one').toLowerCase().replace(/\s+/g, '-')
+      + '-' + (tidyName(d.profile.partnerB) || 'partner-two').toLowerCase().replace(/\s+/g, '-');
+    const rsvpLink = 'evermore.app/rsvp/' + rsvpSlug;
+
+    const setSetup = (k, v) => this.setState(st => ({ setup: Object.assign({}, st.setup, { [k]: v }), setupError: '' }));
+
     return {
-      showApp: !s.showCompile, showCompile: s.showCompile,
-      coupleTitle: d.profile.partnerA + ' & ' + d.profile.partnerB,
+      showApp: !s.showCompile && !s.needsSetup, showCompile: s.showCompile, showSetup: s.needsSetup && !s.showCompile,
+      coupleTitle: (tidyName(d.profile.partnerA) || 'Partner one') + ' & ' + (tidyName(d.profile.partnerB) || 'Partner two'),
       tabs,
       isHome: s.activeTab === 'home', isBudget: s.activeTab === 'budget', isGuests: s.activeTab === 'guests',
       isTimeline: s.activeTab === 'timeline', isVendors: s.activeTab === 'vendors', isDiary: s.activeTab === 'diary', isVows: s.activeTab === 'vows',
+
+      // --- first-run setup ---
+      setupPartnerA: s.setup.partnerA, onSetupPartnerA: (e) => setSetup('partnerA', e.target.value),
+      setupPartnerB: s.setup.partnerB, onSetupPartnerB: (e) => setSetup('partnerB', e.target.value),
+      setupDate: s.setup.date, onSetupDate: (e) => setSetup('date', e.target.value),
+      setupVibe: s.setup.vibe, onSetupVibe: (e) => setSetup('vibe', e.target.value),
+      setupBudget: s.setup.budgetTotal, onSetupBudget: (e) => setSetup('budgetTotal', e.target.value),
+      setupError: s.setupError, hasSetupError: !!s.setupError,
+      startPlanning: () => {
+        const a = tidyName(s.setup.partnerA), b = tidyName(s.setup.partnerB), date = s.setup.date;
+        const missing = [];
+        if (!a) missing.push('your name');
+        if (!b) missing.push("your partner's name");
+        if (!isIsoDate(date)) missing.push('your wedding date');
+        if (missing.length === 3) { this.setState({ setupError: 'Add your names and your wedding date to start — the planner needs all three.' }); return; }
+        if (missing.length) { this.setState({ setupError: 'Still missing ' + listPhrase(missing) + '.' }); return; }
+        if (daysUntil(date) < 0) { this.setState({ setupError: 'That date has already passed — pick your wedding day.' }); return; }
+        const rawBudget = String(s.setup.budgetTotal).trim();
+        if (rawBudget !== '' && (!Number.isFinite(Number(rawBudget)) || Number(rawBudget) < 0)) {
+          this.setState({ setupError: 'Total budget needs to be a number — or leave it blank for now.' }); return;
+        }
+        const fresh = freshData(a, b, date, tidyName(s.setup.vibe), rawBudget === '' ? 0 : Number(rawBudget));
+        this.setState({ data: fresh, needsSetup: false, setupError: '', saveFailed: !this.save(fresh) });
+      },
+      useSampleData: () => {
+        const sample = defaultData();
+        this.setState({ data: sample, needsSetup: false, setupError: '', saveFailed: !this.save(sample) });
+      },
+
+      // --- persistence warnings ---
+      saveFailed: s.saveFailed,
+      loadFailed: s.loadFailed,
+      retrySave: () => this.setState(st => ({ saveFailed: !this.save(st.data) })),
+      dismissLoadWarning: () => this.setState({ loadFailed: false }),
+
+      // --- undo ---
+      hasUndo: !!s.undo, undoLabel: s.undo ? 'Removed ' + s.undo.label + '.' : '',
+      undoDelete: () => { const u = s.undo; if (!u) return; this.update(u.restore); this.setState({ undo: null }); },
+      dismissUndo: () => this.setState({ undo: null }),
+
       exportData: () => {
         const blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob); const a = document.createElement('a');
         a.href = url; a.download = 'our-wedding-planner-backup.json'; a.click(); URL.revokeObjectURL(url);
       },
       importData: (e) => {
-        const file = e.target.files[0]; if (!file) return;
+        const input = e.target;
+        const file = input.files && input.files[0]; if (!file) return;
         const reader = new FileReader();
-        reader.onload = () => { try { const parsed = JSON.parse(reader.result); this.setState({ data: parsed }); this.save(parsed); } catch (err) { alert('That file could not be read as a backup.'); } };
+        reader.onerror = () => { input.value = ''; window.alert('That file could not be read. Your current plan is untouched.'); };
+        reader.onload = () => {
+          input.value = '';
+          let parsed = null;
+          try { parsed = JSON.parse(reader.result); } catch (err) { parsed = null; }
+          const clean = parsed === null ? null : validateData(parsed);
+          if (!clean) {
+            window.alert("That file isn't a complete Evermore backup, so nothing was changed. Your current plan is still here.");
+            return;
+          }
+          if (!window.confirm('Restore this backup? It replaces everything in the planner right now.')) return;
+          this.setState({ data: clean, needsSetup: false, loadFailed: false, undo: null, saveFailed: !this.save(clean) });
+        };
         reader.readAsText(file);
       },
-      wisdomLine, daysLeft, weddingDateLabel: fmtDate(d.profile.date), vibeLabel: d.profile.vibe,
+
+      wisdomLine, daysLeft: hasDate ? daysLeft : '—',
+      weddingDateLabel: hasDate ? fmtDate(d.profile.date) : 'no date set yet', vibeLabel: d.profile.vibe,
       healthScore: score, healthPct: score + '%', healthColor,
       topGaps: gaps.slice(0, 2), noGaps: gaps.length === 0,
       milestones: [
         { label: 'Venue booked', color: venueBooked ? 'oklch(50% 0.09 145)' : 'oklch(85% 0.01 55)' },
-        { label: 'Budget on track', color: overBudgetCats.length === 0 ? 'oklch(50% 0.09 145)' : 'oklch(85% 0.01 55)' },
+        { label: budgetNotSet ? 'Budget not set' : 'Budget on track', color: budgetOnTrack ? 'oklch(50% 0.09 145)' : 'oklch(85% 0.01 55)' },
         { label: 'RSVPs 100% in', color: rsvpComplete ? 'oklch(50% 0.09 145)' : 'oklch(85% 0.01 55)' },
       ],
       storyText: d.profile.story,
       onStoryChange: (e) => this.update(dd => { dd.profile.story = e.target.value; return dd; }),
 
-      hasOverBudget: overBudgetCats.length > 0,
-      overBudgetLine: overBudgetCats.length ? 'Heads up \u2014 ' + overBudgetCats.map(c => c.name + ' is ' + fmtMoney(c.spent - c.planned) + ' over').join(', ') + '.' : '',
+      // --- our details (editable after setup) ---
+      profileA: d.profile.partnerA, onProfileAChange: (e) => this.update(dd => { dd.profile.partnerA = e.target.value; return dd; }),
+      profileB: d.profile.partnerB, onProfileBChange: (e) => this.update(dd => { dd.profile.partnerB = e.target.value; return dd; }),
+      profileDate: d.profile.date, onProfileDateChange: (e) => this.update(dd => { dd.profile.date = e.target.value; return dd; }),
+      profileVibe: d.profile.vibe, onProfileVibeChange: (e) => this.update(dd => { dd.profile.vibe = e.target.value; return dd; }),
+      detailsWarning: !hasDate || !tidyName(d.profile.partnerA) || !tidyName(d.profile.partnerB),
+
+      hasOverBudget: overBudgetCats.length > 0 || unplannedCats.length > 0,
+      overBudgetLine: (function () {
+        const parts = overBudgetCats.map(c => c.name + ' is ' + fmtMoney(num(c.spent) - num(c.planned)) + ' over')
+          .concat(unplannedCats.map(c => c.name + ' has ' + fmtMoney(c.spent) + ' spent with nothing planned'));
+        return parts.length ? 'Heads up — ' + parts.join(', ') + '.' : '';
+      })(),
       moneyWisdom: seededPick(WISDOM.budgetStress, today.getDate()),
-      totalPlannedLabel: fmtMoney(totalPlanned), totalSpentLabel: fmtMoney(totalSpent),
+      totalPlannedLabel: budgetNotSet ? 'Not set' : fmtMoney(totalPlanned), totalSpentLabel: fmtMoney(totalSpent),
+      budgetNotSet, budgetRemainingLabel: budgetNotSet ? '' : fmtMoney(totalPlanned - totalSpent) + (totalSpent > totalPlanned ? ' over' : ' left'),
       budgetRows, addBudgetCategory: () => this.update(dd => { dd.budget.categories.push({ name: 'New category', planned: 0, spent: 0 }); return dd; }),
 
-      guestTotal: d.guests.length, guestYes: d.guests.filter(g => g.status === 'Yes').length,
+      guestTotal: d.guests.length, guestAttending, guestYes: guestYes.length,
       guestNo: d.guests.filter(g => g.status === 'No').length, guestPending: d.guests.filter(g => g.status === 'Pending').length,
-      guestPlusOnes: d.guests.filter(g => g.plusOne).length,
-      rsvpLink: 'evermore.app/rsvp/' + d.profile.partnerA.toLowerCase() + '-' + d.profile.partnerB.toLowerCase(),
+      guestPlusOnes: confirmedPlusOnes,
+      hasDuplicateGuests: duplicateNames > 0,
+      duplicateGuestLine: duplicateNames === 1 ? 'One name appears twice on your list — check the flagged rows.'
+        : duplicateNames + ' names appear more than once — check the flagged rows.',
+      rsvpLink,
       copyLabel: s.copyLabel,
       copyLink: () => {
-        const link = 'evermore.app/rsvp/' + d.profile.partnerA.toLowerCase() + '-' + d.profile.partnerB.toLowerCase();
-        if (navigator.clipboard) navigator.clipboard.writeText(link);
+        if (navigator.clipboard) navigator.clipboard.writeText(rsvpLink);
         this.setState({ copyLabel: 'Copied!' }); setTimeout(() => this.setState({ copyLabel: 'Copy link' }), 1800);
       },
       exportGuestsCsv: () => {
-        const rows = [['Name', 'Status', 'Meal', 'Plus One']].concat(d.guests.map(g => [g.name, g.status, g.meal, g.plusOne ? 'Yes' : 'No']));
-        const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+        const rows = [['Name', 'Status', 'Meal', 'Plus One', 'Attending']].concat(
+          d.guests.map(g => [g.name, g.status, g.meal, g.plusOne ? 'Yes' : 'No',
+            g.status === 'Yes' ? (g.plusOne ? 2 : 1) : 0]));
+        const csv = rows.map(r => r.map(csvCell).join(',')).join('\r\n');
         const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a');
         a.href = url; a.download = 'guest-list.csv'; a.click(); URL.revokeObjectURL(url);
       },
-      guestRows, newGuestName: s.newGuestName, onNewGuestChange: (e) => this.setState({ newGuestName: e.target.value }),
-      addGuest: () => { if (!s.newGuestName.trim()) return; this.update(dd => { dd.guests.push({ name: s.newGuestName.trim(), status: 'Pending', meal: '', plusOne: false }); return dd; }); this.setState({ newGuestName: '' }); },
+      guestRows, newGuestName: s.newGuestName,
+      onNewGuestChange: (e) => this.setState({ newGuestName: e.target.value, guestNotice: '' }),
+      guestNotice: s.guestNotice, hasGuestNotice: !!s.guestNotice,
+      addGuest: () => {
+        const name = tidyName(s.newGuestName);
+        if (!name) { this.setState({ guestNotice: 'Type a name before adding a guest.' }); return; }
+        if (d.guests.some(g => normName(g.name) === normName(name))) {
+          this.setState({ guestNotice: '“' + name + '” is already on the guest list.' }); return;
+        }
+        this.update(dd => { dd.guests.push({ name, status: 'Pending', meal: '', plusOne: false }); return dd; });
+        this.setState({ newGuestName: '', guestNotice: '' });
+      },
 
       phaseRows,
 
@@ -620,8 +1073,9 @@ class Component extends DCLogic {
       newEntryText: s.newEntryText, onNewEntryTextChange: (e) => this.setState({ newEntryText: e.target.value }),
       addDiaryEntry: () => {
         if (!s.newEntryText.trim()) return;
-        this.update(dd => { dd.diary.push({ date: s.newEntryDate, text: s.newEntryText.trim(), mood: s.newEntryMood, shared: false }); return dd; });
-        this.setState({ newEntryText: '' });
+        const date = isIsoDate(s.newEntryDate) ? s.newEntryDate : todayIso();
+        this.update(dd => { dd.diary.push({ date, text: s.newEntryText.trim(), mood: s.newEntryMood, shared: false }); return dd; });
+        this.setState({ newEntryText: '', newEntryDate: date });
       },
       openCompile: () => this.setState({ showCompile: true }),
       closeCompile: () => this.setState({ showCompile: false }),
