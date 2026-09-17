@@ -287,7 +287,7 @@
   function defaultData() {
     return {
       setupDone: false,
-      profile: { partnerA: '', partnerB: '', date: '', vibe: '', story: '', currency: '$' },
+      profile: { partnerA: '', partnerB: '', date: '', vibe: '', story: '', currency: 'USD' },
       budget: STARTER_CATEGORIES.map(function (n) {
         return { name: n, planned: 0, spent: 0 };
       }),
@@ -305,6 +305,24 @@
   var VENDOR_STATUSES = ['Inquiring', 'Quoted', 'Deposit Paid', 'Contracted', 'Paid in Full'];
   var DEPOSIT_PAID = ['Deposit Paid', 'Contracted', 'Paid in Full'];
   var TONES = ['Heartfelt', 'Funny', 'Traditional', 'Short'];
+
+  /* Currencies are stored and chosen by their ISO code, because several of
+     them share a symbol: JPY and CNY are both \u00a5, and SEK, NOK and DKK are
+     all kr. The code is what the couple picks; the symbol is what we print. */
+  var CURRENCIES = [
+    ['USD', '$'], ['PHP', '\u20b1'], ['EUR', '\u20ac'], ['GBP', '\u00a3'], ['AUD', 'A$'],
+    ['CAD', 'C$'], ['JPY', '\u00a5'], ['CNY', '\u00a5'], ['CHF', 'CHF'], ['INR', '\u20b9'],
+    ['SGD', 'S$'], ['NZD', 'NZ$'], ['SEK', 'kr'], ['NOK', 'kr'], ['DKK', 'kr']
+  ];
+
+  /* Plans saved before currencies had codes stored a bare symbol. Those that
+     map to one code are migrated on load; the rest keep printing their own
+     symbol, so no one's figures change label under them. */
+  var LEGACY_SYMBOLS = {
+    '$': 'USD', '\u20b1': 'PHP', '\u20ac': 'EUR', '\u00a3': 'GBP', 'A$': 'AUD', 'C$': 'CAD',
+    '\u00a5': 'JPY', 'CHF': 'CHF', '\u20b9': 'INR', 'S$': 'SGD', 'NZ$': 'NZD', 'kr': 'SEK'
+  };
+
 
   var loadFailed = false;     // saved data existed but could not be read
   var saveFailed = false;     // the browser refused the last write
@@ -425,7 +443,7 @@
     return {
       setupDone: raw.setupDone === true,
       profile: { partnerA: p.partnerA, partnerB: p.partnerB, date: p.date || '',
-        vibe: p.vibe || '', story: p.story || '', currency: curSym(p.currency) },
+        vibe: p.vibe || '', story: p.story || '', currency: curStore(p.currency) },
       budget: budget, guests: guests, vendors: vendors, timeline: timeline, diary: diary, vows: vows
     };
   }
@@ -456,24 +474,30 @@
 
   /* The symbol the couple picked in Settings. Kept as a plain symbol so a
      printed keepsake or an exported CSV reads the same as the screen. */
-  var CURRENCIES = [
-    ['$', '$  Dollar (USD)'], ['\u00a3', '\u00a3  Pound (GBP)'], ['\u20ac', '\u20ac  Euro (EUR)'],
-    ['A$', 'A$  Australian dollar'], ['C$', 'C$  Canadian dollar'], ['NZ$', 'NZ$  New Zealand dollar'],
-    ['\u00a5', '\u00a5  Yen / Yuan'], ['\u20b9', '\u20b9  Rupee (INR)'], ['R', 'R  Rand (ZAR)'],
-    ['R$', 'R$  Real (BRL)'], ['Mex$', 'Mex$  Mexican peso'], ['\u20b1', '\u20b1  Philippine peso'],
-    ['\u20a9', '\u20a9  Won (KRW)'], ['\u0e3f', '\u0e3f  Baht (THB)'], ['\u20a6', '\u20a6  Naira (NGN)'],
-    ['RM', 'RM  Ringgit (MYR)'], ['S$', 'S$  Singapore dollar'], ['HK$', 'HK$  Hong Kong dollar'],
-    ['kr', 'kr  Krone / Krona'], ['z\u0142', 'z\u0142  Z\u0142oty (PLN)'], ['CHF', 'CHF  Swiss franc'],
-    ['AED', 'AED  Dirham'], ['\u20aa', '\u20aa  Shekel (ILS)'], ['\u20ba', '\u20ba  Lira (TRY)']
-  ];
+  function currencyEntry(code) {
+    for (var i = 0; i < CURRENCIES.length; i++) {
+      if (CURRENCIES[i][0] === code) return CURRENCIES[i];
+    }
+    return null;
+  }
 
-  /** Never blank, never long enough to break a layout. */
+  /** What gets stored: a code where we know one, otherwise the value as-is. */
+  function curStore(v) {
+    var t = String(v == null ? '' : v).trim().slice(0, 6);
+    if (!t) return 'USD';
+    if (currencyEntry(t)) return t;
+    return LEGACY_SYMBOLS[t] || t;
+  }
+
+  /** What gets printed. Never blank, never long enough to break a layout. */
   function curSym(v) {
-    var t = String(v == null ? '' : v).trim().slice(0, 4);
-    return t || '$';
+    var code = curStore(v);
+    var hit = currencyEntry(code);
+    return hit ? hit[1] : code.slice(0, 4);
   }
 
   function currency() { return curSym(data.profile.currency); }
+  function currencyCode() { return curStore(data.profile.currency); }
 
   function money(n) {
     var v = Math.round(num(n));
@@ -484,14 +508,17 @@
   }
 
   function currencyOptions() {
-    var cur = currency();
+    var cur = currencyCode();
     var known = false;
     var opts = CURRENCIES.map(function (c) {
       if (c[0] === cur) known = true;
-      return '<option value="' + esc(c[0]) + '"' + (c[0] === cur ? ' selected' : '') + '>' + esc(c[1]) + '</option>';
+      // 'USD $', 'JPY \u00a5', 'CHF' \u2014 the code first, so \u00a5 and kr are never a guess.
+      var label = c[0] === c[1] ? c[0] : c[0] + '  ' + c[1];
+      return '<option value="' + esc(c[0]) + '"' + (c[0] === cur ? ' selected' : '') + '>' + esc(label) + '</option>';
     });
-    // A symbol restored from a backup we do not list still shows as chosen.
-    if (!known) opts.unshift('<option value="' + esc(cur) + '" selected>' + esc(cur) + '  (current)</option>');
+    // A currency restored from an older backup that we no longer list still
+    // shows as the chosen one rather than silently switching to dollars.
+    if (!known) opts.unshift('<option value="' + esc(cur) + '" selected>' + esc(cur) + '  (saved)</option>');
     return opts.join('');
   }
 

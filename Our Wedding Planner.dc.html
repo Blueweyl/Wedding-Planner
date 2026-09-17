@@ -199,30 +199,21 @@
             </label>
             <label style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);">Currency
               <select id="details-currency" value="{{ profileCurrency }}" onChange="{{ onProfileCurrencyChange }}" style="display:block;width:100%;margin-top:6px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:8px 10px;font-size:13.5px;letter-spacing:normal;text-transform:none;color:oklch(28% 0.02 40);">
-                <option value="$">$&nbsp; Dollar (USD)</option>
-                <option value="£">£&nbsp; Pound (GBP)</option>
-                <option value="€">€&nbsp; Euro (EUR)</option>
-                <option value="A$">A$&nbsp; Australian dollar</option>
-                <option value="C$">C$&nbsp; Canadian dollar</option>
-                <option value="NZ$">NZ$&nbsp; New Zealand dollar</option>
-                <option value="¥">¥&nbsp; Yen / Yuan</option>
-                <option value="₹">₹&nbsp; Rupee (INR)</option>
-                <option value="R">R&nbsp; Rand (ZAR)</option>
-                <option value="R$">R$&nbsp; Real (BRL)</option>
-                <option value="Mex$">Mex$&nbsp; Mexican peso</option>
-                <option value="₱">₱&nbsp; Philippine peso</option>
-                <option value="₩">₩&nbsp; Won (KRW)</option>
-                <option value="฿">฿&nbsp; Baht (THB)</option>
-                <option value="₦">₦&nbsp; Naira (NGN)</option>
-                <option value="RM">RM&nbsp; Ringgit (MYR)</option>
-                <option value="S$">S$&nbsp; Singapore dollar</option>
-                <option value="HK$">HK$&nbsp; Hong Kong dollar</option>
-                <option value="kr">kr&nbsp; Krone / Krona</option>
-                <option value="zł">zł&nbsp; Złoty (PLN)</option>
-                <option value="CHF">CHF&nbsp; Swiss franc</option>
-                <option value="AED">AED&nbsp; Dirham</option>
-                <option value="₪">₪&nbsp; Shekel (ILS)</option>
-                <option value="₺">₺&nbsp; Lira (TRY)</option>
+                <option value="USD">USD&nbsp; $</option>
+                <option value="PHP">PHP&nbsp; ₱</option>
+                <option value="EUR">EUR&nbsp; €</option>
+                <option value="GBP">GBP&nbsp; £</option>
+                <option value="AUD">AUD&nbsp; A$</option>
+                <option value="CAD">CAD&nbsp; C$</option>
+                <option value="JPY">JPY&nbsp; ¥</option>
+                <option value="CNY">CNY&nbsp; ¥</option>
+                <option value="CHF">CHF</option>
+                <option value="INR">INR&nbsp; ₹</option>
+                <option value="SGD">SGD&nbsp; S$</option>
+                <option value="NZD">NZD&nbsp; NZ$</option>
+                <option value="SEK">SEK&nbsp; kr</option>
+                <option value="NOK">NOK&nbsp; kr</option>
+                <option value="DKK">DKK&nbsp; kr</option>
               </select>
             </label>
           </div>
@@ -611,18 +602,35 @@ function daysBetween(a, b) { return Math.ceil((b - a) / 86400000); }
 function fmtDate(d) { return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
 /* The symbol the couple chose under Our Details. Set once per render from
    the saved profile, so every figure on the page agrees. */
+/* Currencies are stored and chosen by their ISO code, because several of them
+   share a symbol: JPY and CNY are both \u00a5, and SEK, NOK and DKK are all kr.
+   The code is what the couple picks; the symbol is what we print. */
 const CURRENCIES = [
-  ['$', '$  Dollar (USD)'], ['\u00a3', '\u00a3  Pound (GBP)'], ['\u20ac', '\u20ac  Euro (EUR)'],
-  ['A$', 'A$  Australian dollar'], ['C$', 'C$  Canadian dollar'], ['NZ$', 'NZ$  New Zealand dollar'],
-  ['\u00a5', '\u00a5  Yen / Yuan'], ['\u20b9', '\u20b9  Rupee (INR)'], ['R', 'R  Rand (ZAR)'],
-  ['R$', 'R$  Real (BRL)'], ['Mex$', 'Mex$  Mexican peso'], ['\u20b1', '\u20b1  Philippine peso'],
-  ['\u20a9', '\u20a9  Won (KRW)'], ['\u0e3f', '\u0e3f  Baht (THB)'], ['\u20a6', '\u20a6  Naira (NGN)'],
-  ['RM', 'RM  Ringgit (MYR)'], ['S$', 'S$  Singapore dollar'], ['HK$', 'HK$  Hong Kong dollar'],
-  ['kr', 'kr  Krone / Krona'], ['z\u0142', 'z\u0142  Z\u0142oty (PLN)'], ['CHF', 'CHF  Swiss franc'],
-  ['AED', 'AED  Dirham'], ['\u20aa', '\u20aa  Shekel (ILS)'], ['\u20ba', '\u20ba  Lira (TRY)']
+  ['USD', '$'], ['PHP', '\u20b1'], ['EUR', '\u20ac'], ['GBP', '\u00a3'], ['AUD', 'A$'],
+  ['CAD', 'C$'], ['JPY', '\u00a5'], ['CNY', '\u00a5'], ['CHF', 'CHF'], ['INR', '\u20b9'],
+  ['SGD', 'S$'], ['NZD', 'NZ$'], ['SEK', 'kr'], ['NOK', 'kr'], ['DKK', 'kr']
 ];
-/** Never blank, never long enough to break a layout. */
-function curSym(v) { const t = String(v == null ? '' : v).trim().slice(0, 4); return t || '$'; }
+/* Plans saved before currencies had codes stored a bare symbol. Those that map
+   to one code are migrated on load; the rest keep printing their own symbol,
+   so no one's figures change label under them. */
+const LEGACY_SYMBOLS = {
+  '$': 'USD', '\u20b1': 'PHP', '\u20ac': 'EUR', '\u00a3': 'GBP', 'A$': 'AUD', 'C$': 'CAD',
+  '\u00a5': 'JPY', 'CHF': 'CHF', '\u20b9': 'INR', 'S$': 'SGD', 'NZ$': 'NZD', 'kr': 'SEK'
+};
+function currencyEntry(code) { return CURRENCIES.find(c => c[0] === code) || null; }
+/** What gets stored: a code where we know one, otherwise the value as-is. */
+function curStore(v) {
+  const t = String(v == null ? '' : v).trim().slice(0, 6);
+  if (!t) return 'USD';
+  if (currencyEntry(t)) return t;
+  return LEGACY_SYMBOLS[t] || t;
+}
+/** What gets printed. Never blank, never long enough to break a layout. */
+function curSym(v) {
+  const code = curStore(v);
+  const hit = currencyEntry(code);
+  return hit ? hit[1] : code.slice(0, 4);
+}
 let CURRENCY = '$';
 function fmtMoney(n) {
   const v = Math.round(num(n));
@@ -861,14 +869,14 @@ function validateData(raw) {
 
   return {
     profile: { partnerA: p.partnerA, partnerB: p.partnerB, date: p.date, budgetTotal: num(p.budgetTotal),
-      vibe: p.vibe || '', story: p.story || '', currency: curSym(p.currency) },
+      vibe: p.vibe || '', story: p.story || '', currency: curStore(p.currency) },
     budget: { categories }, guests, vendors, timeline, diary, vows,
   };
 }
 
 function defaultData() {
   return {
-    profile: { partnerA: 'Sarah', partnerB: 'Mike', date: '2027-06-12', budgetTotal: 35000, vibe: 'cozy backyard', currency: '$',
+    profile: { partnerA: 'Sarah', partnerB: 'Mike', date: '2027-06-12', budgetTotal: 35000, vibe: 'cozy backyard', currency: 'USD',
       story: "We met at a friend's rooftop party in the rain and didn't leave for three hours. Two years, one rescue dog, and a lot of very specific opinions about pasta later — we're doing this." },
     budget: { categories: [
       { name: 'Venue', planned: 12000, spent: 12000 },
@@ -942,7 +950,7 @@ function defaultData() {
 /** A couple's own planner: the checklist stays, the sample content doesn't. */
 function freshData(partnerA, partnerB, date, vibe, budgetTotal) {
   const d = defaultData();
-  d.profile = { partnerA, partnerB, date, budgetTotal: num(budgetTotal), vibe: vibe || '', story: '', currency: '$' };
+  d.profile = { partnerA, partnerB, date, budgetTotal: num(budgetTotal), vibe: vibe || '', story: '', currency: 'USD' };
   d.budget.categories = d.budget.categories.map(c => ({ name: c.name, planned: 0, spent: 0 }));
   d.guests = [];
   d.vendors = [];
@@ -1355,8 +1363,8 @@ class Component extends DCLogic {
       onProfileDateChange: (e) => setDetail('date', e.target.value),
       detailsError: s.detailsError, hasDetailsError: !!s.detailsError,
       profileVibe: d.profile.vibe, onProfileVibeChange: (e) => this.update(dd => { dd.profile.vibe = e.target.value; return dd; }),
-      profileCurrency: CURRENCY,
-      onProfileCurrencyChange: (e) => this.update(dd => { dd.profile.currency = curSym(e.target.value); return dd; }),
+      profileCurrency: curStore(d.profile.currency),
+      onProfileCurrencyChange: (e) => this.update(dd => { dd.profile.currency = curStore(e.target.value); return dd; }),
       detailsWarning: !hasDate || !tidyName(d.profile.partnerA) || !tidyName(d.profile.partnerB),
 
       hasOverBudget: overBudgetCats.length > 0 || unplannedCats.length > 0,

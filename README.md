@@ -27,9 +27,11 @@ assistant), all saved locally in the visitor's browser — no backend required.
 
 ## Money, dates and guests
 
-- **Currency** is a setting, not a hard-coded `$`. Pick a symbol under
-  *Settings* (standalone) or *Our Details* (component version); every figure
-  on screen follows it, and the numbers themselves never change.
+- **Currency** is a setting, not a hard-coded `$`. Pick a currency by its ISO
+  code under *Settings* (standalone) or *Our Details* (component version) —
+  codes, because JPY and CNY share ¥ and SEK, NOK and DKK all use kr. Every
+  figure on screen follows the choice, and the numbers themselves never
+  change. Plans saved before codes existed keep working.
 - **Timeline** phases are named relative to the day ("6 Months Out"), so the
   wedding date turns them into real deadlines: each phase shows the date it
   should be finished by and reads as *complete*, *do this now* or *overdue*.
