@@ -4,6 +4,33 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="version" content="1.0">
+<meta name="theme-color" content="#faf6f0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Evermore">
+<script>
+/* Phone support, and nothing else: when this page is served from a web
+   address it announces itself as an installable app and registers the
+   offline worker sitting beside it. Opened as a local file — the way the
+   download works — this does nothing at all and asks for nothing. */
+(function () {
+  if (!/^https?:$/.test(location.protocol)) return;
+  var manifest = document.createElement('link');
+  manifest.rel = 'manifest';
+  manifest.href = 'manifest.webmanifest';
+  document.head.appendChild(manifest);
+  var touch = document.createElement('link');
+  touch.rel = 'apple-touch-icon';
+  touch.href = 'apple-touch-icon.png';
+  document.head.appendChild(touch);
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js')['catch'](function () {});
+    });
+  }
+})();
+</script>
 <title>Evermore — Wedding Planner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
