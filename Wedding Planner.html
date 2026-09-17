@@ -71,7 +71,7 @@
     max-width: 1180px; margin: 0 auto; padding: 14px 24px;
     display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
   }
-  .brand { font-family: var(--serif); font-size: 21px; font-style: italic; color: var(--deep); white-space: nowrap; }
+  .brand { font-family: var(--serif); font-size: 21px; font-style: italic; color: var(--deep); min-width: 0; }
   .tabs { display: flex; gap: 3px; flex-wrap: wrap; }
   .tab {
     border: none; background: none; color: var(--body);
@@ -114,6 +114,35 @@
   .check.done span.txt { color: var(--muted); text-decoration: line-through; }
   .empty { text-align: center; color: var(--muted); font-size: 14px; padding: 28px 10px; }
 
+  /* Warnings and undo */
+  .warn-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+    max-width: 1180px; margin: 12px auto 0; padding: 14px 20px; border-radius: 8px;
+    background: #f7ded4; color: #6d3323; font-size: 13.5px; line-height: 1.5;
+  }
+  .warn-bar.warn-soft { background: #f7ecd6; color: #6b5324; }
+  .warn-bar > div:first-child { max-width: 760px; overflow-wrap: anywhere; }
+  .undo-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    max-width: 1180px; margin: 14px auto 0; padding: 11px 20px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    font-size: 13.5px; color: var(--body);
+  }
+  .notice {
+    background: #f7ecd6; color: #6b5324; border-radius: 8px; padding: 11px 15px;
+    font-size: 13px; line-height: 1.5; overflow-wrap: anywhere;
+  }
+  .btn-icon { min-width: 32px; min-height: 32px; }
+  .brand { overflow-wrap: anywhere; }
+  .longtext { overflow-wrap: anywhere; word-break: break-word; }
+  .tag-over { background: var(--over); color: #fff; font-weight: 600; letter-spacing: .04em; }
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+
+  @media (max-width: 780px) {
+    .vows-grid { grid-template-columns: minmax(0, 1fr) !important; }
+  }
   @media (max-width: 640px) {
     .wrap { padding: 22px 16px 60px; }
     .card { padding: 20px; }
@@ -121,6 +150,8 @@
     .stat { font-size: 42px; }
     .setup { padding: 40px 18px; }
     .setup h1 { font-size: 32px; }
+    .warn-bar, .undo-bar { margin-left: 16px; margin-right: 16px; padding: 12px 16px; }
+    .keepsake { padding: 36px 16px; }
   }
 
   /* Keepsake print view */
@@ -135,6 +166,7 @@
 </style>
 </head>
 <body>
+<div id="warnings" aria-live="polite"></div>
 <div id="app"></div>
 
 <script>
@@ -254,37 +286,134 @@
 
   /* ---------------- state ---------------- */
 
+  var GUEST_STATUSES = ['Pending', 'Yes', 'No'];
+  var VENDOR_STATUSES = ['Inquiring', 'Quoted', 'Deposit Paid', 'Contracted', 'Paid in Full'];
+  var DEPOSIT_PAID = ['Deposit Paid', 'Contracted', 'Paid in Full'];
+  var TONES = ['Heartfelt', 'Funny', 'Traditional', 'Short'];
+
+  var loadFailed = false;     // saved data existed but could not be read
+  var saveFailed = false;     // the browser refused the last write
+  var undoable = null;        // one step of undo for a deletion
+  var notice = '';            // inline message on the Guests tab
+  var setupError = '';        // inline message on the setup screen
+  var setupDraft = null;      // what was typed, kept across a failed attempt
+
   var data = load();
   var tab = 'home';
   var view = 'app';           // 'app' | 'keepsake'
   var draft = { guest: '', diaryText: '', diaryMood: 'Joyful', diaryDate: today() };
 
   function load() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return migrate(JSON.parse(raw));
-    } catch (e) {}
+    var raw = null;
+    try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { raw = null; }
+    if (raw == null) return defaultData();
+    var parsed = null;
+    try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
+    var clean = parsed === null ? null : validate(parsed);
+    if (clean) return clean;
+    // Saved data we cannot trust is never partially applied and never
+    // overwritten behind the couple's back — we say so and leave it alone.
+    loadFailed = true;
     return defaultData();
   }
 
-  function migrate(d) {
-    var base = defaultData();
-    if (!d || typeof d !== 'object') return base;
-    // Fill in anything a older/partial save is missing so the app never
-    // renders against an undefined branch.
-    d.profile = Object.assign({}, base.profile, d.profile || {});
-    d.vows = Object.assign({}, base.vows, d.vows || {});
-    if (!Array.isArray(d.budget)) d.budget = base.budget;
-    if (!Array.isArray(d.guests)) d.guests = [];
-    if (!Array.isArray(d.vendors)) d.vendors = [];
-    if (!Array.isArray(d.diary)) d.diary = [];
-    if (!Array.isArray(d.timeline) || !d.timeline.length) d.timeline = base.timeline;
-    d.setupDone = !!d.setupDone;
-    return d;
+  /**
+   * Returns a clean, fully-typed copy of `raw` when it is a complete plan,
+   * or null when anything is missing or of the wrong type. A null result
+   * must always mean "keep the current data".
+   */
+  function validate(raw) {
+    function isObj(v) { return !!v && typeof v === 'object' && !Array.isArray(v); }
+    function isStr(v) { return typeof v === 'string'; }
+    function optStr(v) { return v == null || typeof v === 'string'; }
+    function isNum(v) { return isFinite(Number(v)); }
+    function optDate(v) { return v == null || v === '' || isIsoDate(v); }
+    if (!isObj(raw)) return null;
+
+    var p = raw.profile;
+    if (!isObj(p) || !isStr(p.partnerA) || !isStr(p.partnerB)) return null;
+    if (!optDate(p.date)) return null;
+    if (!optStr(p.vibe) || !optStr(p.story)) return null;
+
+    if (!Array.isArray(raw.budget)) return null;
+    var budget = [];
+    for (var i = 0; i < raw.budget.length; i++) {
+      var c = raw.budget[i];
+      if (!isObj(c) || !isStr(c.name) || !isNum(c.planned) || !isNum(c.spent)) return null;
+      budget.push({ name: c.name, planned: num(c.planned), spent: num(c.spent) });
+    }
+
+    if (!Array.isArray(raw.guests)) return null;
+    var guests = [];
+    for (var j = 0; j < raw.guests.length; j++) {
+      var g = raw.guests[j];
+      if (!isObj(g) || !isStr(g.name) || GUEST_STATUSES.indexOf(g.status) === -1) return null;
+      if (!optStr(g.meal) || (g.plusOne != null && typeof g.plusOne !== 'boolean')) return null;
+      guests.push({ name: g.name, status: g.status, meal: g.meal || '',
+        plusOne: g.status !== 'No' && g.plusOne === true });
+    }
+
+    if (!Array.isArray(raw.vendors)) return null;
+    var vendors = [];
+    for (var k = 0; k < raw.vendors.length; k++) {
+      var v = raw.vendors[k];
+      if (!isObj(v) || !isStr(v.name) || VENDOR_STATUSES.indexOf(v.status) === -1) return null;
+      if (!optStr(v.category) || !optStr(v.contact)) return null;
+      if (!optDate(v.deposit) || !optDate(v.final)) return null;
+      vendors.push({ name: v.name, category: v.category || '', contact: v.contact || '',
+        status: v.status, deposit: v.deposit || '', final: v.final || '' });
+    }
+
+    if (!Array.isArray(raw.timeline) || !raw.timeline.length) return null;
+    var timeline = [];
+    for (var m = 0; m < raw.timeline.length; m++) {
+      var ph = raw.timeline[m];
+      if (!isObj(ph) || !isStr(ph.phase) || !Array.isArray(ph.tasks)) return null;
+      var tasks = [];
+      for (var n = 0; n < ph.tasks.length; n++) {
+        var t = ph.tasks[n];
+        if (!isObj(t) || !isStr(t.text) || typeof t.done !== 'boolean') return null;
+        tasks.push({ text: t.text, done: t.done, key: t.key === true });
+      }
+      timeline.push({ phase: ph.phase, tasks: tasks });
+    }
+
+    if (!Array.isArray(raw.diary)) return null;
+    var diary = [];
+    for (var q = 0; q < raw.diary.length; q++) {
+      var e = raw.diary[q];
+      if (!isObj(e) || !isIsoDate(e.date) || !isStr(e.text)) return null;
+      if (!optStr(e.mood) || (e.shared != null && typeof e.shared !== 'boolean')) return null;
+      diary.push({ date: e.date, text: e.text, mood: e.mood || 'Reflective', shared: e.shared === true });
+    }
+
+    var vw = raw.vows;
+    if (!isObj(vw)) return null;
+    var keys = ['opening', 'memory', 'promises', 'closing'], vows = {};
+    for (var r = 0; r < keys.length; r++) {
+      if (!optStr(vw[keys[r]])) return null;
+      vows[keys[r]] = vw[keys[r]] || '';
+    }
+    vows.tone = TONES.indexOf(vw.tone) === -1 ? 'Heartfelt' : vw.tone;
+
+    return {
+      setupDone: raw.setupDone === true,
+      profile: { partnerA: p.partnerA, partnerB: p.partnerB, date: p.date || '',
+        vibe: p.vibe || '', story: p.story || '' },
+      budget: budget, guests: guests, vendors: vendors, timeline: timeline, diary: diary, vows: vows
+    };
   }
 
+  /** Persist without throwing. Returns false when the browser refused. */
   function save() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      saveFailed = false;
+    } catch (e) {
+      saveFailed = true;
+    }
+    updateWarnings();
+    return !saveFailed;
   }
 
   /* ---------------- helpers ---------------- */
@@ -297,9 +426,86 @@
     });
   }
 
+  function num(v) { var n = Number(v); return isFinite(n) ? n : 0; }
+
   function money(n) {
-    var v = Math.round(Number(n) || 0);
-    return '$' + v.toLocaleString();
+    var v = Math.round(num(n));
+    return (v < 0 ? '-$' : '$') + Math.abs(v).toLocaleString();
+  }
+
+  /** Names match if they differ only by case or by extra whitespace. */
+  function normName(s) { return String(s == null ? '' : s).trim().replace(/\s+/g, ' ').toLowerCase(); }
+  function tidy(s) { return String(s == null ? '' : s).trim().replace(/\s+/g, ' '); }
+
+  function isIsoDate(s) {
+    return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !!parseDate(s);
+  }
+
+  /** Quote a CSV cell, neutralising anything a spreadsheet would run. */
+  function csvCell(v) {
+    var s = v == null ? '' : String(v);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+
+  function listPhrase(items) {
+    if (items.length <= 1) return items[0] || '';
+    if (items.length === 2) return items[0] + ' and ' + items[1];
+    return items.slice(0, -1).join(', ') + ', and ' + items[items.length - 1];
+  }
+
+  /** A payment is 'overdue' once its date has passed unpaid, 'soon' within 14 days. */
+  function paymentFlag(iso, paid) {
+    if (paid || !isIsoDate(iso)) return null;
+    var left = daysUntil(iso);
+    if (left === null) return null;
+    if (left < 0) return 'overdue';
+    if (left <= 14) return 'soon';
+    return null;
+  }
+
+  function depositPaid(v) { return DEPOSIT_PAID.indexOf(v.status) !== -1; }
+  function finalPaid(v) { return v.status === 'Paid in Full'; }
+
+  /** Budget state, shared by the Budget tab, Home milestones and health. */
+  function budgetState() {
+    var planned = 0, spent = 0, over = [], unplanned = [];
+    data.budget.forEach(function (c) {
+      var p = num(c.planned), s = num(c.spent);
+      planned += p; spent += s;
+      if (p > 0 && s > p) over.push(c);
+      else if (p === 0 && s > 0) unplanned.push(c);
+    });
+    return { planned: planned, spent: spent, over: over, unplanned: unplanned,
+      notSet: planned === 0, onTrack: planned > 0 && !over.length && !unplanned.length };
+  }
+
+  function overduePayments() {
+    return data.vendors.filter(function (v) {
+      return paymentFlag(v.deposit, depositPaid(v)) === 'overdue' ||
+             paymentFlag(v.final, finalPaid(v)) === 'overdue';
+    });
+  }
+
+  /** Confirmed attendance: yes guests plus the plus-ones they confirmed. */
+  function attendance() {
+    var yes = data.guests.filter(function (g) { return g.status === 'Yes'; });
+    var plus = yes.filter(function (g) { return g.plusOne === true; }).length;
+    return { yes: yes.length, plusOnes: plus, attending: yes.length + plus,
+      no: data.guests.filter(function (g) { return g.status === 'No'; }).length,
+      pending: data.guests.filter(function (g) { return g.status === 'Pending'; }).length,
+      invited: data.guests.length };
+  }
+
+  function duplicateNameKeys() {
+    var counts = {}, dupes = {};
+    data.guests.forEach(function (g) {
+      var k = normName(g.name);
+      if (!k) return;
+      counts[k] = (counts[k] || 0) + 1;
+      if (counts[k] > 1) dupes[k] = true;
+    });
+    return dupes;
   }
 
   function parseDate(s) {
@@ -345,21 +551,34 @@
       if (t.key && !t.done) gaps.push(t.text);
     });
 
-    var over = data.budget.filter(function (c) { return c.spent > c.planned && c.planned > 0; });
-    if (over.length) {
-      score -= 4 * over.length;
-      gaps.unshift('Over budget on ' + over.map(function (c) { return c.name; }).join(', '));
+    var b = budgetState();
+    if (b.over.length) {
+      score -= 4 * b.over.length;
+      gaps.unshift('Over budget on ' + b.over.map(function (c) { return c.name; }).join(', '));
     }
+    if (b.unplanned.length) {
+      score -= 4 * b.unplanned.length;
+      gaps.unshift('Unplanned spending on ' + b.unplanned.map(function (c) { return c.name; }).join(', '));
+    }
+    if (b.notSet) gaps.push('No budget planned yet');
 
     var pending = data.guests.filter(function (g) { return g.status === 'Pending'; }).length;
     if (pending) gaps.push(pending + ' RSVP' + (pending > 1 ? 's' : '') + ' still outstanding');
+
+    // A missed payment date is the most time-critical gap, so it leads.
+    var late = overduePayments();
+    if (late.length) {
+      score -= 5 * late.length;
+      gaps.unshift('Payment overdue for ' + late.map(function (v) { return v.name || 'a vendor'; }).join(', '));
+    }
 
     return { score: Math.max(0, Math.min(100, score)), gaps: gaps, done: done, total: total };
   }
 
   function wisdomLine() {
     var left = daysUntil(data.profile.date);
-    var over = data.budget.some(function (c) { return c.spent > c.planned && c.planned > 0; });
+    var bs = budgetState();
+    var over = bs.over.length > 0 || bs.unplanned.length > 0;
     var rsvpDone = data.guests.length > 0 && data.guests.every(function (g) { return g.status !== 'Pending'; });
     var h = health();
     var pool;
@@ -375,15 +594,51 @@
   /* ---------------- render ---------------- */
 
   var app = document.getElementById('app');
+  var warnBox = document.getElementById('warnings');
 
   function render() {
+    updateWarnings();
     if (!data.setupDone) { app.innerHTML = setupView(); return; }
     if (view === 'keepsake') { app.innerHTML = keepsakeView(); return; }
-    app.innerHTML = topbar() + '<div class="wrap">' + tabView() + '</div>';
+    app.innerHTML = topbar() + undoBar() + '<div class="wrap">' + tabView() + '</div>';
+  }
+
+  /* Warnings live outside #app so they can appear while the couple is typing
+     without re-rendering the tab (which would move the caret). */
+  function updateWarnings() {
+    if (!warnBox) return;
+    var html = '';
+    if (saveFailed) {
+      html += '<div class="warn-bar" role="alert">' +
+        '<div><strong>Your last change is not saved.</strong> This browser refused to store it \u2014 it may be ' +
+        'full, or in private mode. Nothing you typed was lost, but it will go when you close this tab. ' +
+        'Save a backup file now.</div>' +
+        '<div class="row" style="gap:8px;">' +
+          '<button class="btn" onclick="APP.exportJson()">Save backup file</button>' +
+          '<button class="btn" onclick="APP.retrySave()">Try saving again</button>' +
+        '</div></div>';
+    }
+    if (loadFailed) {
+      html += '<div class="warn-bar warn-soft" role="alert">' +
+        '<div>There is saved data in this browser that could not be read, so it has been left untouched. ' +
+        'Restore a backup from Settings \u2014 or carry on here to start fresh.</div>' +
+        '<button class="btn" onclick="APP.dismissLoadWarning()">Dismiss</button></div>';
+    }
+    warnBox.innerHTML = html;
+  }
+
+  function undoBar() {
+    if (!undoable) return '';
+    return '<div class="undo-bar" role="status">' +
+      '<div>Removed ' + esc(undoable.label) + '.</div>' +
+      '<div class="row" style="gap:8px;">' +
+        '<button class="btn" onclick="APP.undo()">Undo</button>' +
+        '<button class="btn-icon" aria-label="Dismiss undo notice" title="Dismiss" onclick="APP.dismissUndo()">&times;</button>' +
+      '</div></div>';
   }
 
   function setupView() {
-    var p = data.profile;
+    var p = setupDraft || data.profile;
     return '' +
       '<div class="setup">' +
         '<div class="label" style="margin-bottom:14px;">Welcome</div>' +
@@ -391,17 +646,21 @@
         '<p style="color:var(--body);margin:0 0 30px;">Everything you enter stays on this computer. ' +
         'You can change any of it later.</p>' +
 
-        '<div class="field"><label>Your name</label>' +
+        '<div class="field"><label for="su-a">Your name</label>' +
         '<input id="su-a" value="' + esc(p.partnerA) + '" placeholder="e.g. Alex" autofocus></div>' +
 
-        '<div class="field"><label>Your partner\'s name</label>' +
+        '<div class="field"><label for="su-b">Your partner\'s name</label>' +
         '<input id="su-b" value="' + esc(p.partnerB) + '" placeholder="e.g. Sam"></div>' +
 
-        '<div class="field"><label>Wedding date <span class="muted">(a rough guess is fine)</span></label>' +
+        '<div class="field"><label for="su-date">Wedding date <span class="muted">(a rough guess is fine)</span></label>' +
         '<input id="su-date" type="date" value="' + esc(p.date) + '"></div>' +
 
-        '<div class="field"><label>The vibe you\'re going for</label>' +
+        '<div class="field"><label for="su-vibe">The vibe you\'re going for <span class="muted">(optional)</span></label>' +
         '<input id="su-vibe" value="' + esc(p.vibe) + '" placeholder="e.g. cozy backyard, black tie, beach at sunset"></div>' +
+
+        (setupError
+          ? '<div class="notice" role="alert" style="margin-bottom:16px;">' + esc(setupError) + '</div>'
+          : '') +
 
         '<button class="btn btn-primary" style="padding:13px 30px;font-size:14px;margin-top:8px;" ' +
         'onclick="APP.finishSetup()">Start planning</button>' +
@@ -415,14 +674,16 @@
       ['vows', 'Vows'], ['settings', 'Settings']
     ];
     var btns = tabs.map(function (t) {
-      return '<button class="tab' + (tab === t[0] ? ' active' : '') + '" ' +
-             'onclick="APP.go(\'' + t[0] + '\')">' + t[1] + '</button>';
+      var on = tab === t[0];
+      return '<button type="button" class="tab' + (on ? ' active' : '') + '"' +
+             (on ? ' aria-current="page"' : '') +
+             ' onclick="APP.go(\'' + t[0] + '\')">' + t[1] + '</button>';
     }).join('');
 
     return '' +
       '<div class="topbar"><div class="topbar-inner">' +
         '<div class="brand">' + esc(coupleName()) + '</div>' +
-        '<div class="tabs">' + btns + '</div>' +
+        '<nav class="tabs" aria-label="Planner sections">' + btns + '</nav>' +
       '</div></div>';
   }
 
@@ -469,7 +730,7 @@
         return /venue/i.test((v.category || '') + ' ' + (v.name || '')) &&
                COMMITTED.indexOf(v.status) !== -1;
       });
-    var onBudget = !data.budget.some(function (c) { return c.spent > c.planned && c.planned > 0; });
+    var bs = budgetState();
     var rsvpIn = data.guests.length > 0 && data.guests.every(function (g) { return g.status !== 'Pending'; });
 
     function milestone(label, on) {
@@ -500,7 +761,7 @@
         '<div class="card">' +
           '<div class="label" style="margin-bottom:14px;">Milestones</div>' +
           milestone('Venue booked', venueBooked) +
-          milestone('Budget on track', onBudget) +
+          milestone(bs.notSet ? 'Budget not set' : 'Budget on track', bs.onTrack) +
           milestone('All RSVPs in', rsvpIn) +
           milestone('Vows written', (data.vows.promises || '').trim().length > 40) +
         '</div>' +
@@ -509,7 +770,7 @@
       '<div class="card">' +
         '<div class="serif" style="font-size:22px;font-weight:600;margin-bottom:6px;">Our Story</div>' +
         '<div class="muted" style="margin-bottom:12px;">How you met, or anything you want to remember later.</div>' +
-        '<textarea rows="4" style="width:100%;" placeholder="We met when..." ' +
+        '<textarea rows="4" style="width:100%;" placeholder="We met when..." aria-label="Our story" ' +
         'oninput="APP.setStory(this.value)">' + esc(data.profile.story) + '</textarea>' +
       '</div>';
   }
@@ -517,41 +778,50 @@
   /* ---------------- budget ---------------- */
 
   function budgetView() {
-    var planned = data.budget.reduce(function (a, c) { return a + (Number(c.planned) || 0); }, 0);
-    var spent = data.budget.reduce(function (a, c) { return a + (Number(c.spent) || 0); }, 0);
-    var over = data.budget.filter(function (c) { return c.spent > c.planned && c.planned > 0; });
+    var bs = budgetState();
+    var planned = bs.planned, spent = bs.spent;
+    var problems = bs.over.map(function (c) { return c.name + ' is ' + money(num(c.spent) - num(c.planned)) + ' over'; })
+      .concat(bs.unplanned.map(function (c) { return c.name + ' has ' + money(c.spent) + ' spent with nothing planned'; }));
 
-    var warn = over.length
-      ? '<div class="quote" style="font-family:var(--sans);font-style:normal;font-size:14px;">' +
+    var warn = problems.length
+      ? '<div class="quote longtext" style="font-family:var(--sans);font-style:normal;font-size:14px;">' +
         '<strong style="color:var(--over);">Heads up — </strong>' +
-        esc(over.map(function (c) { return c.name + ' is ' + money(c.spent - c.planned) + ' over'; }).join(', ')) + '.' +
+        esc(problems.join(', ')) + '.' +
         '<div class="serif" style="font-style:italic;font-size:15px;margin-top:8px;">"' +
         esc(pick(WISDOM.budget, new Date().getDate())) + '"</div></div>'
       : '';
 
     var rows = data.budget.map(function (c, i) {
-      var p = Number(c.planned) || 0;
-      var s = Number(c.spent) || 0;
-      var isOver = s > p && p > 0;
+      var p = num(c.planned);
+      var s = num(c.spent);
+      var isOver = p > 0 && s > p;
+      var isUnplanned = p === 0 && s > 0;
+      var label = esc(c.name || 'this category');
       // Each bar shows how much of THAT category's own budget is used, so a
       // small category running over still reads as full rather than a sliver.
       var w = p > 0 ? Math.min(100, (s / p) * 100) : (s > 0 ? 100 : 0);
+      var note = isUnplanned ? 'Unplanned — ' + money(s) + ' spent with nothing planned'
+        : isOver ? money(s - p) + ' over plan' : '';
       return '' +
         '<div style="padding:14px 0;border-bottom:1px solid var(--line-soft);">' +
           '<div class="row" style="justify-content:space-between;margin-bottom:9px;">' +
-            '<input value="' + esc(c.name) + '" style="border:none;background:none;font-weight:600;font-size:15px;padding:4px 0;min-width:140px;flex:1;" ' +
+            '<input value="' + esc(c.name) + '" aria-label="Budget category name" style="border:none;background:none;font-weight:600;font-size:15px;padding:4px 0;min-width:120px;flex:1;" ' +
             'oninput="APP.budgetField(' + i + ',\'name\',this.value)">' +
             '<div class="row" style="gap:7px;">' +
-              '<span class="muted">planned</span>' +
-              '<input type="number" min="0" step="50" value="' + (Number(c.planned) || 0) + '" style="width:92px;" ' +
-              'onchange="APP.budgetNum(' + i + ',\'planned\',this.value)">' +
-              '<span class="muted">spent</span>' +
-              '<input type="number" min="0" step="50" value="' + (Number(c.spent) || 0) + '" style="width:92px;" ' +
-              'onchange="APP.budgetNum(' + i + ',\'spent\',this.value)">' +
-              '<button class="btn-icon" title="Remove" onclick="APP.budgetRemove(' + i + ')">&times;</button>' +
+              '<label class="row" style="gap:6px;"><span class="muted">planned</span>' +
+              '<input type="number" min="0" step="50" value="' + p + '" style="width:92px;" ' +
+              'aria-label="Planned amount for ' + label + '" ' +
+              'onchange="APP.budgetNum(' + i + ',\'planned\',this.value)"></label>' +
+              '<label class="row" style="gap:6px;"><span class="muted">spent</span>' +
+              '<input type="number" min="0" step="50" value="' + s + '" style="width:92px;" ' +
+              'aria-label="Spent amount for ' + label + '" ' +
+              'onchange="APP.budgetNum(' + i + ',\'spent\',this.value)"></label>' +
+              '<button class="btn-icon" aria-label="Remove budget category ' + label + '" ' +
+              'title="Remove budget category ' + label + '" onclick="APP.budgetRemove(' + i + ')">&times;</button>' +
             '</div>' +
           '</div>' +
-          '<div class="bar"><div style="width:' + w + '%;background:' + (isOver ? 'var(--over)' : 'var(--accent)') + ';"></div></div>' +
+          '<div class="bar"><div style="width:' + w + '%;background:' + (isOver || isUnplanned ? 'var(--over)' : 'var(--accent)') + ';"></div></div>' +
+          (note ? '<div class="longtext" style="font-size:12.5px;color:var(--over);margin-top:7px;">' + esc(note) + '</div>' : '') +
         '</div>';
     }).join('');
 
@@ -559,11 +829,16 @@
 
     return warn +
       '<div class="row" style="gap:34px;margin-bottom:22px;">' +
-        '<div><div class="label">Planned</div><div class="serif" style="font-size:28px;font-weight:600;">' + money(planned) + '</div></div>' +
-        '<div><div class="label">Spent</div><div class="serif" style="font-size:28px;font-weight:600;">' + money(spent) + '</div></div>' +
-        '<div><div class="label">Remaining</div><div class="serif" style="font-size:28px;font-weight:600;color:' +
-          (remaining < 0 ? 'var(--over)' : 'var(--good)') + ';">' + money(remaining) + '</div></div>' +
+        '<div><div class="label">Planned</div><div id="budget-planned" class="serif" style="font-size:28px;font-weight:600;">' +
+          (bs.notSet ? 'Not set' : money(planned)) + '</div></div>' +
+        '<div><div class="label">Spent</div><div id="budget-spent" class="serif" style="font-size:28px;font-weight:600;">' + money(spent) + '</div></div>' +
+        '<div><div class="label">Remaining</div><div id="budget-remaining" class="serif" style="font-size:28px;font-weight:600;color:' +
+          (bs.notSet ? 'var(--muted)' : remaining < 0 ? 'var(--over)' : 'var(--good)') + ';">' +
+          (bs.notSet ? '\u2014' : money(remaining)) + '</div></div>' +
       '</div>' +
+      (bs.notSet
+        ? '<div class="notice" id="budget-not-set" style="margin-bottom:18px;">Budget not set — add a planned amount to a category and we\'ll track your spending against it.</div>'
+        : '') +
       '<div class="card">' + rows +
         '<button class="btn" style="margin-top:16px;" onclick="APP.budgetAdd()">+ Add category</button>' +
       '</div>';
@@ -573,46 +848,61 @@
 
   function guestsView() {
     var g = data.guests;
-    var yes = g.filter(function (x) { return x.status === 'Yes'; }).length;
-    var no = g.filter(function (x) { return x.status === 'No'; }).length;
-    var pend = g.filter(function (x) { return x.status === 'Pending'; }).length;
-    var plus = g.filter(function (x) { return x.plusOne && x.status === 'Yes'; }).length;
+    var a = attendance();
+    var dupes = duplicateNameKeys();
+    var dupeCount = Object.keys(dupes).length;
 
-    function stat(n, l) {
-      return '<div><span style="font-weight:600;font-size:17px;">' + n + '</span> <span class="muted">' + l + '</span></div>';
+    function stat(n, l, id) {
+      return '<div' + (id ? ' id="' + id + '"' : '') + '><span style="font-weight:600;font-size:17px;">' + n +
+        '</span> <span class="muted">' + l + '</span></div>';
     }
 
     var rows = g.length ? g.map(function (x, i) {
+      var who = esc(x.name || 'this guest');
+      var declined = x.status === 'No';
+      var isDupe = dupes[normName(x.name)] === true;
       return '' +
         '<div class="list-row">' +
-          '<input value="' + esc(x.name) + '" style="border:none;background:none;flex:1;min-width:130px;font-size:14.5px;" ' +
+          '<input value="' + esc(x.name) + '" aria-label="Guest name" style="border:none;background:none;flex:1;min-width:120px;font-size:14.5px;" ' +
           'oninput="APP.guestField(' + i + ',\'name\',this.value)">' +
-          '<select onchange="APP.guestField(' + i + ',\'status\',this.value,true)">' +
-            ['Pending', 'Yes', 'No'].map(function (s) {
+          (isDupe ? '<span class="tag tag-warn">duplicate name</span>' : '') +
+          '<select aria-label="RSVP for ' + who + '" onchange="APP.guestField(' + i + ',\'status\',this.value,true)">' +
+            GUEST_STATUSES.map(function (s) {
               return '<option' + (x.status === s ? ' selected' : '') + '>' + s + '</option>';
             }).join('') +
           '</select>' +
-          '<input value="' + esc(x.meal || '') + '" placeholder="meal" style="width:120px;" ' +
-          'oninput="APP.guestField(' + i + ',\'meal\',this.value)">' +
-          '<label class="row" style="gap:5px;font-size:13px;color:var(--body);cursor:pointer;">' +
-            '<input type="checkbox"' + (x.plusOne ? ' checked' : '') + ' onchange="APP.guestPlus(' + i + ',this.checked)"> +1' +
+          '<input value="' + esc(x.meal || '') + '" placeholder="meal" style="width:110px;" ' +
+          'aria-label="Meal for ' + who + '" oninput="APP.guestField(' + i + ',\'meal\',this.value)">' +
+          '<label class="row" style="gap:5px;font-size:13px;color:' + (declined ? 'var(--muted)' : 'var(--body)') + ';cursor:pointer;">' +
+            '<input type="checkbox"' + (x.plusOne && !declined ? ' checked' : '') + (declined ? ' disabled' : '') +
+            ' aria-label="Plus-one attending with ' + who + '"' +
+            ' onchange="APP.guestPlus(' + i + ',this.checked)"> +1' +
           '</label>' +
-          '<button class="btn-icon" onclick="APP.guestRemove(' + i + ')">&times;</button>' +
+          '<button class="btn-icon" aria-label="Remove guest ' + who + '" title="Remove guest ' + who + '" ' +
+          'onclick="APP.guestRemove(' + i + ')">&times;</button>' +
         '</div>';
     }).join('') : '<div class="empty">No guests yet. Add your first one below.</div>';
 
     return '' +
-      '<div class="row" style="gap:24px;margin-bottom:20px;">' +
-        stat(g.length + plus, 'attending total') + stat(yes, 'yes') + stat(no, 'no') +
-        stat(pend, 'pending') + stat(plus, 'plus-ones') +
+      '<div class="row" style="gap:24px;margin-bottom:8px;">' +
+        stat(a.attending, 'attending', 'guest-attending') + stat(a.invited, 'invited') +
+        stat(a.yes, 'yes') + stat(a.no, 'no') + stat(a.pending, 'pending') +
+        stat(a.plusOnes, 'confirmed plus-ones') +
       '</div>' +
+      '<div class="muted" style="margin-bottom:18px;">Attending counts confirmed "yes" guests plus the plus-ones they confirmed.</div>' +
+      (dupeCount
+        ? '<div class="notice" role="alert" style="margin-bottom:18px;">' +
+          (dupeCount === 1 ? 'One name appears more than once' : dupeCount + ' names appear more than once') +
+          ' — check the flagged rows.</div>'
+        : '') +
       '<div class="card">' + rows +
         '<div class="row" style="gap:8px;margin-top:18px;">' +
-          '<input id="guest-input" placeholder="Add a guest name" style="flex:1;min-width:180px;" ' +
+          '<input id="guest-input" placeholder="Add a guest name" aria-label="Name of the guest to add" style="flex:1;min-width:160px;" ' +
           'onkeydown="if(event.key===\'Enter\')APP.guestAdd()">' +
           '<button class="btn btn-primary" onclick="APP.guestAdd()">Add</button>' +
           '<button class="btn" onclick="APP.exportCsv()">Export CSV</button>' +
         '</div>' +
+        (notice ? '<div class="notice" role="alert" style="margin-top:12px;">' + esc(notice) + '</div>' : '') +
       '</div>';
   }
 
@@ -650,32 +940,38 @@
 
   function vendorsView() {
     var rows = data.vendors.length ? data.vendors.map(function (v, i) {
-      var soon = [v.deposit, v.final].some(function (d) {
-        var n = daysUntil(d);
-        return n !== null && n >= 0 && n <= 14;
-      });
+      var who = esc(v.name || 'this vendor');
+      var dep = paymentFlag(v.deposit, depositPaid(v));
+      var fin = paymentFlag(v.final, finalPaid(v));
+      function badge(flag, what) {
+        if (flag === 'overdue') return '<span class="tag tag-over">' + what + ' OVERDUE</span>';
+        if (flag === 'soon') return '<span class="tag tag-warn">' + what + ' due soon</span>';
+        return '';
+      }
       return '' +
         '<div style="padding:14px 0;border-bottom:1px solid var(--line-soft);">' +
           '<div class="row" style="gap:8px;margin-bottom:9px;">' +
-            '<input value="' + esc(v.name) + '" placeholder="Vendor name" style="border:none;background:none;font-weight:600;flex:1;min-width:150px;" ' +
+            '<input value="' + esc(v.name) + '" placeholder="Vendor name" aria-label="Vendor name" style="border:none;background:none;font-weight:600;flex:1;min-width:130px;" ' +
             'oninput="APP.vendorField(' + i + ',\'name\',this.value)">' +
             '<input value="' + esc(v.category || '') + '" placeholder="category" style="width:130px;" ' +
-            'oninput="APP.vendorField(' + i + ',\'category\',this.value)">' +
+            'aria-label="Category for ' + who + '" oninput="APP.vendorField(' + i + ',\'category\',this.value)">' +
             '<input value="' + esc(v.contact || '') + '" placeholder="email or phone" style="width:190px;" ' +
-            'oninput="APP.vendorField(' + i + ',\'contact\',this.value)">' +
-            '<select onchange="APP.vendorField(' + i + ',\'status\',this.value,true)">' +
-              ['Inquiring', 'Quoted', 'Deposit Paid', 'Contracted', 'Paid in Full'].map(function (s) {
+            'aria-label="Contact for ' + who + '" oninput="APP.vendorField(' + i + ',\'contact\',this.value)">' +
+            '<select aria-label="Booking status for ' + who + '" onchange="APP.vendorField(' + i + ',\'status\',this.value,true)">' +
+              VENDOR_STATUSES.map(function (s) {
                 return '<option' + (v.status === s ? ' selected' : '') + '>' + s + '</option>';
               }).join('') +
             '</select>' +
-            '<button class="btn-icon" onclick="APP.vendorRemove(' + i + ')">&times;</button>' +
+            '<button class="btn-icon" aria-label="Remove vendor ' + who + '" title="Remove vendor ' + who + '" ' +
+            'onclick="APP.vendorRemove(' + i + ')">&times;</button>' +
           '</div>' +
-          '<div class="row" style="gap:16px;font-size:12.5px;color:var(--muted);">' +
-            '<span>deposit due <input type="date" value="' + esc(v.deposit || '') + '" style="font-size:12.5px;padding:5px 7px;" ' +
-            'onchange="APP.vendorField(' + i + ',\'deposit\',this.value,true)"></span>' +
-            '<span>final due <input type="date" value="' + esc(v.final || '') + '" style="font-size:12.5px;padding:5px 7px;" ' +
-            'onchange="APP.vendorField(' + i + ',\'final\',this.value,true)"></span>' +
-            (soon ? '<span class="tag tag-warn">payment due soon</span>' : '') +
+          '<div class="row" style="gap:12px;font-size:12.5px;color:var(--muted);">' +
+            '<label class="row" style="gap:6px;">deposit due <input type="date" value="' + esc(v.deposit || '') + '" style="font-size:12.5px;padding:5px 7px;" ' +
+            'onchange="APP.vendorField(' + i + ',\'deposit\',this.value,true)"></label>' +
+            badge(dep, 'deposit') +
+            '<label class="row" style="gap:6px;">final due <input type="date" value="' + esc(v.final || '') + '" style="font-size:12.5px;padding:5px 7px;" ' +
+            'onchange="APP.vendorField(' + i + ',\'final\',this.value,true)"></label>' +
+            badge(fin, 'final payment') +
           '</div>' +
         '</div>';
     }).join('') : '<div class="empty">No vendors yet. Add the first one below.</div>';
@@ -698,12 +994,15 @@
             '<div class="muted">' + esc(fmtDate(e.date)) + ' · ' + esc(e.mood || '') + '</div>' +
             '<div class="row" style="gap:10px;">' +
               '<label class="row" style="gap:5px;font-size:12.5px;color:var(--body);cursor:pointer;">' +
-                '<input type="checkbox"' + (e.shared ? ' checked' : '') + ' onchange="APP.diaryShare(' + i + ',this.checked)"> include in keepsake' +
+                '<input type="checkbox"' + (e.shared ? ' checked' : '') +
+                ' aria-label="Include the ' + esc(fmtDate(e.date)) + ' entry in the keepsake"' +
+                ' onchange="APP.diaryShare(' + i + ',this.checked)"> include in keepsake' +
               '</label>' +
-              '<button class="btn-icon" onclick="APP.diaryRemove(' + i + ')">&times;</button>' +
+              '<button class="btn-icon" aria-label="Remove the ' + esc(fmtDate(e.date)) + ' diary entry" ' +
+              'title="Remove this entry" onclick="APP.diaryRemove(' + i + ')">&times;</button>' +
             '</div>' +
           '</div>' +
-          '<div style="font-size:14.5px;line-height:1.65;color:#3d322c;white-space:pre-wrap;">' + esc(e.text) + '</div>' +
+          '<div class="longtext" style="font-size:14.5px;line-height:1.65;color:#3d322c;white-space:pre-wrap;">' + esc(e.text) + '</div>' +
         '</div>';
     }).join('') : '<div class="empty">No entries yet. Write the first one above.</div>';
 
@@ -711,15 +1010,15 @@
       '<div class="card" style="margin-bottom:20px;">' +
         '<div class="serif" style="font-size:20px;font-weight:600;margin-bottom:12px;">New entry</div>' +
         '<div class="row" style="gap:10px;margin-bottom:10px;">' +
-          '<input type="date" id="d-date" value="' + esc(draft.diaryDate) + '" onchange="APP.draftSet(\'diaryDate\',this.value)">' +
-          '<select id="d-mood" onchange="APP.draftSet(\'diaryMood\',this.value)">' +
+          '<input type="date" id="d-date" aria-label="Date of this diary entry" value="' + esc(draft.diaryDate) + '" onchange="APP.draftSet(\'diaryDate\',this.value)">' +
+          '<select id="d-mood" aria-label="Mood for this diary entry" onchange="APP.draftSet(\'diaryMood\',this.value)">' +
             moods.map(function (m) {
               return '<option' + (draft.diaryMood === m ? ' selected' : '') + '>' + m + '</option>';
             }).join('') +
           '</select>' +
         '</div>' +
         '<textarea id="d-text" rows="3" style="width:100%;" placeholder="What happened? How did it feel?" ' +
-        'oninput="APP.draftSet(\'diaryText\',this.value)">' + esc(draft.diaryText) + '</textarea>' +
+        'aria-label="New diary entry" oninput="APP.draftSet(\'diaryText\',this.value)">' + esc(draft.diaryText) + '</textarea>' +
         '<div class="row" style="justify-content:space-between;margin-top:12px;">' +
           '<button class="btn btn-primary" onclick="APP.diaryAdd()">Save entry</button>' +
           '<button class="btn" onclick="APP.openKeepsake()">Compile keepsake</button>' +
@@ -738,9 +1037,10 @@
       Short: 'Under a minute. Every word has to earn its place.'
     };
 
-    var tones = ['Heartfelt', 'Funny', 'Traditional', 'Short'].map(function (t) {
+    var tones = TONES.map(function (t) {
       var on = v.tone === t;
-      return '<button class="btn' + (on ? ' btn-primary' : '') + '" style="padding:8px 16px;" ' +
+      return '<button type="button" class="btn' + (on ? ' btn-primary' : '') + '" style="padding:8px 16px;" ' +
+             'aria-pressed="' + (on ? 'true' : 'false') + '" ' +
              'onclick="APP.setTone(\'' + t + '\')">' + t + '</button>';
     }).join('');
 
@@ -757,15 +1057,15 @@
     function block(key, title, hint, rows) {
       return '' +
         '<div style="margin-bottom:22px;">' +
-          '<div class="label" style="margin-bottom:5px;">' + title + '</div>' +
+          '<div class="label" style="margin-bottom:5px;" id="vow-' + key + '-label">' + title + '</div>' +
           '<div class="muted" style="margin-bottom:8px;">' + hint + '</div>' +
-          '<textarea rows="' + rows + '" style="width:100%;" oninput="APP.setVow(\'' + key + '\',this.value)">' +
-          esc(v[key]) + '</textarea>' +
+          '<textarea id="vow-' + key + '" rows="' + rows + '" style="width:100%;" aria-labelledby="vow-' + key + '-label" ' +
+          'oninput="APP.setVow(\'' + key + '\',this.value)">' + esc(v[key]) + '</textarea>' +
         '</div>';
     }
 
     return '' +
-      '<div class="grid" style="grid-template-columns:minmax(0,2fr) minmax(220px,1fr);align-items:start;">' +
+      '<div class="grid vows-grid" style="grid-template-columns:minmax(0,2fr) minmax(220px,1fr);align-items:start;">' +
         '<div class="card">' +
           '<div class="row" style="gap:8px;margin-bottom:14px;">' + tones + '</div>' +
           '<div class="serif" style="font-style:italic;font-size:15px;color:var(--body);margin-bottom:24px;">' +
@@ -776,10 +1076,10 @@
           block('closing', 'Closing line', 'The last thing they hear before "I do."', 2) +
         '</div>' +
         '<div class="card">' +
-          '<div class="label" style="margin-bottom:8px;">Word count</div>' +
-          '<div class="serif" style="font-size:38px;font-weight:600;color:' + wColor + ';">' + words + '</div>' +
-          '<div class="muted" style="margin:8px 0 16px;">' + wNote + '</div>' +
-          '<div class="muted">About ' + speak + ' spoken aloud.</div>' +
+          '<div class="label" style="margin-bottom:8px;" id="vow-count-label">Word count</div>' +
+          '<div id="vow-word-count" class="serif" aria-labelledby="vow-count-label" style="font-size:38px;font-weight:600;color:' + wColor + ';">' + words + '</div>' +
+          '<div id="vow-word-note" class="muted" style="margin:8px 0 16px;">' + wNote + '</div>' +
+          '<div id="vow-speak-time" class="muted">About ' + speak + ' spoken aloud.</div>' +
           '<div class="muted" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);">' +
             'Read them out loud before the day. They always sound different in your mouth than on the page.' +
           '</div>' +
@@ -795,14 +1095,17 @@
       '<div style="max-width:560px;">' +
         '<div class="card" style="margin-bottom:20px;">' +
           '<div class="serif" style="font-size:21px;font-weight:600;margin-bottom:16px;">Your details</div>' +
-          '<div class="field"><label>Your name</label>' +
-          '<input value="' + esc(p.partnerA) + '" oninput="APP.profile(\'partnerA\',this.value)"></div>' +
-          '<div class="field"><label>Partner\'s name</label>' +
-          '<input value="' + esc(p.partnerB) + '" oninput="APP.profile(\'partnerB\',this.value)"></div>' +
-          '<div class="field"><label>Wedding date</label>' +
-          '<input type="date" value="' + esc(p.date) + '" onchange="APP.profile(\'date\',this.value,true)"></div>' +
-          '<div class="field" style="margin-bottom:0;"><label>The vibe</label>' +
-          '<input value="' + esc(p.vibe) + '" oninput="APP.profile(\'vibe\',this.value)"></div>' +
+          '<div class="field"><label for="set-a">Your name</label>' +
+          '<input id="set-a" value="' + esc(p.partnerA) + '" oninput="APP.profile(\'partnerA\',this.value)"></div>' +
+          '<div class="field"><label for="set-b">Partner\'s name</label>' +
+          '<input id="set-b" value="' + esc(p.partnerB) + '" oninput="APP.profile(\'partnerB\',this.value)"></div>' +
+          '<div class="field"><label for="set-date">Wedding date</label>' +
+          '<input id="set-date" type="date" value="' + esc(p.date) + '" onchange="APP.profile(\'date\',this.value,true)"></div>' +
+          '<div class="field" style="margin-bottom:0;"><label for="set-vibe">The vibe</label>' +
+          '<input id="set-vibe" value="' + esc(p.vibe) + '" oninput="APP.profile(\'vibe\',this.value)"></div>' +
+          ((!tidy(p.partnerA) || !tidy(p.partnerB) || !isIsoDate(p.date))
+            ? '<div class="notice" role="alert" style="margin-top:14px;">Both names and a wedding date keep your countdown and keepsake headings working.</div>'
+            : '') +
         '</div>' +
 
         '<div class="card" style="margin-bottom:20px;">' +
@@ -837,7 +1140,7 @@
       return '' +
         '<div style="margin-bottom:28px;">' +
           '<div class="muted" style="margin-bottom:6px;">' + esc(fmtDate(e.date)) + '</div>' +
-          '<div class="serif" style="font-size:18px;line-height:1.75;white-space:pre-wrap;">' + esc(e.text) + '</div>' +
+          '<div class="serif longtext" style="font-size:18px;line-height:1.75;white-space:pre-wrap;">' + esc(e.text) + '</div>' +
         '</div>';
     }).join('') : '<div class="empty">No entries marked yet — tick "include in keepsake" on any diary entry.</div>';
 
@@ -850,7 +1153,7 @@
           '<button class="btn btn-primary" onclick="window.print()">Print / Save as PDF</button>' +
         '</div>' +
         '<div style="text-align:center;margin-bottom:44px;">' +
-          '<div class="serif" style="font-style:italic;font-size:40px;color:var(--deep);">' + esc(coupleName()) + '</div>' +
+          '<div class="serif longtext" style="font-style:italic;font-size:clamp(28px,8vw,40px);color:var(--deep);">' + esc(coupleName()) + '</div>' +
           (data.profile.date ? '<div class="muted" style="margin-top:8px;">' + esc(fmtDate(data.profile.date)) + '</div>' : '') +
           '<div class="label" style="margin-top:12px;">Our Story</div>' +
         '</div>' +
@@ -866,33 +1169,110 @@
   function quiet() { save(); }
   function loud() { save(); render(); }
 
+  /** Remove a row behind a confirmation, keeping one step of undo. */
+  function removeRow(list, index, label) {
+    if (!list || index < 0 || index >= list.length) return;
+    var what = tidy(label) || 'this item';
+    if (!window.confirm('Remove ' + what + '? You can undo this straight after.')) return;
+    var snapshot = JSON.parse(JSON.stringify(list[index]));
+    list.splice(index, 1);
+    undoable = { label: what, index: index, restore: function () {
+      list.splice(Math.min(index, list.length), 0, snapshot);
+    } };
+    notice = '';
+    loud();
+  }
+
   var APP = {
-    go: function (t) { tab = t; window.scrollTo(0, 0); render(); },
+    go: function (t) { tab = t; notice = ''; undoable = null; window.scrollTo(0, 0); render(); },
 
     finishSetup: function () {
-      data.profile.partnerA = (document.getElementById('su-a').value || '').trim();
-      data.profile.partnerB = (document.getElementById('su-b').value || '').trim();
-      data.profile.date = document.getElementById('su-date').value;
-      data.profile.vibe = (document.getElementById('su-vibe').value || '').trim();
+      var a = tidy(document.getElementById('su-a').value);
+      var b = tidy(document.getElementById('su-b').value);
+      var date = document.getElementById('su-date').value;
+      var vibe = tidy(document.getElementById('su-vibe').value);
+
+      // Never throw away what they typed just because something is missing.
+      setupDraft = { partnerA: a, partnerB: b, date: date, vibe: vibe };
+
+      var missing = [];
+      if (!a) missing.push('your name');
+      if (!b) missing.push("your partner's name");
+      if (!isIsoDate(date)) missing.push('your wedding date');
+      if (missing.length === 3) {
+        setupError = 'Add your names and your wedding date to start — the planner needs all three.';
+        render(); return;
+      }
+      if (missing.length) {
+        setupError = 'Still missing ' + listPhrase(missing) + '.';
+        render(); return;
+      }
+      if (daysUntil(date) < 0) {
+        setupError = 'That date has already passed — pick the day you are planning for.';
+        render(); return;
+      }
+
+      setupError = '';
+      setupDraft = null;
+      data.profile.partnerA = a;
+      data.profile.partnerB = b;
+      data.profile.date = date;
+      data.profile.vibe = vibe;
       data.setupDone = true;
       loud();
     },
+
+    retrySave: function () { save(); },
+    dismissLoadWarning: function () { loadFailed = false; updateWarnings(); },
+    undo: function () {
+      if (!undoable) return;
+      undoable.restore();
+      undoable = null;
+      loud();
+    },
+    dismissUndo: function () { undoable = null; render(); },
 
     profile: function (k, v, re) { data.profile[k] = v; re ? loud() : quiet(); },
     setStory: function (v) { data.profile.story = v; quiet(); },
 
     budgetField: function (i, k, v) { data.budget[i][k] = v; quiet(); },
-    budgetNum: function (i, k, v) { data.budget[i][k] = Math.max(0, Number(v) || 0); loud(); },
+    budgetNum: function (i, k, v) { data.budget[i][k] = Math.max(0, num(v)); loud(); },
     budgetAdd: function () { data.budget.push({ name: 'New category', planned: 0, spent: 0 }); loud(); },
-    budgetRemove: function (i) { data.budget.splice(i, 1); loud(); },
+    budgetRemove: function (i) { removeRow(data.budget, i, (data.budget[i] || {}).name || 'this category'); },
 
-    guestField: function (i, k, v, re) { data.guests[i][k] = v; re ? loud() : quiet(); },
-    guestPlus: function (i, v) { data.guests[i].plusOne = v; loud(); },
-    guestRemove: function (i) { data.guests.splice(i, 1); loud(); },
+    guestField: function (i, k, v, re) {
+      if (k === 'status') {
+        v = GUEST_STATUSES.indexOf(v) === -1 ? 'Pending' : v;
+        // A declined RSVP cannot bring a plus-one, so the flag goes with it.
+        if (v === 'No') data.guests[i].plusOne = false;
+      }
+      data.guests[i][k] = v;
+      re ? loud() : quiet();
+    },
+    guestPlus: function (i, v) {
+      data.guests[i].plusOne = data.guests[i].status !== 'No' && v === true;
+      loud();
+    },
+    guestRemove: function (i) { removeRow(data.guests, i, (data.guests[i] || {}).name || 'this guest'); },
     guestAdd: function () {
       var el = document.getElementById('guest-input');
-      var name = (el.value || '').trim();
-      if (!name) { el.focus(); return; }
+      var name = tidy(el && el.value);
+      if (!name) {
+        notice = 'Type a name before adding a guest.';
+        render();
+        var f = document.getElementById('guest-input');
+        if (f) f.focus();
+        return;
+      }
+      var clash = data.guests.some(function (g) { return normName(g.name) === normName(name); });
+      if (clash) {
+        notice = '“' + name + '” is already on the guest list.';
+        render();
+        var d = document.getElementById('guest-input');
+        if (d) { d.value = name; d.focus(); d.select(); }
+        return;
+      }
+      notice = '';
       data.guests.push({ name: name, status: 'Pending', meal: '', plusOne: false });
       loud();
       var next = document.getElementById('guest-input');
@@ -909,7 +1289,7 @@
       data.vendors.push({ name: '', category: '', contact: '', status: 'Inquiring', deposit: '', final: '' });
       loud();
     },
-    vendorRemove: function (i) { data.vendors.splice(i, 1); loud(); },
+    vendorRemove: function (i) { removeRow(data.vendors, i, (data.vendors[i] || {}).name || 'this vendor'); },
 
     draftSet: function (k, v) { draft[k] = v; },
     diaryAdd: function () {
@@ -920,17 +1300,34 @@
       loud();
     },
     diaryShare: function (i, v) { data.diary[i].shared = v; quiet(); },
-    diaryRemove: function (i) { data.diary.splice(i, 1); loud(); },
+    diaryRemove: function (i) {
+      var e = data.diary[i] || {};
+      removeRow(data.diary, i, 'the entry from ' + (fmtDate(e.date) || 'this day'));
+    },
 
     setTone: function (t) { data.vows.tone = t; loud(); },
     setVow: function (k, v) {
       data.vows[k] = v;
       save();
-      // live-update just the counter so typing stays smooth
+      // Live-update just the counter so typing stays smooth. Keyed by id, not
+      // by a style-matching selector that any restyle would silently break.
       var words = (data.vows.opening + ' ' + data.vows.memory + ' ' + data.vows.promises + ' ' + data.vows.closing)
         .trim().split(/\s+/).filter(Boolean).length;
-      var el = document.querySelector('.card .serif[style*="38px"]');
-      if (el) el.textContent = words;
+      var el = document.getElementById('vow-word-count');
+      if (el) {
+        el.textContent = words;
+        el.style.color = words < 120 ? 'var(--muted)' : words <= 260 ? 'var(--good)' : 'var(--warn)';
+      }
+      var note = document.getElementById('vow-word-note');
+      if (note) {
+        note.textContent = words === 0 ? 'Start anywhere — the middle is fine.'
+          : words < 120 ? 'Still finding your words — keep going.'
+          : words <= 260 ? "That's about right for one to two minutes."
+          : 'Getting long — consider trimming.';
+      }
+      var secs = Math.round((words / 130) * 60);
+      var speak = document.getElementById('vow-speak-time');
+      if (speak) speak.textContent = 'About ' + (secs < 60 ? secs + ' sec' : (Math.round(secs / 6) / 10) + ' min') + ' spoken aloud.';
     },
 
     openKeepsake: function () { view = 'keepsake'; window.scrollTo(0, 0); render(); },
@@ -942,35 +1339,54 @@
     },
 
     importJson: function (ev) {
-      var file = ev.target.files && ev.target.files[0];
+      var input = ev.target;
+      var file = input.files && input.files[0];
       if (!file) return;
       var reader = new FileReader();
+      reader.onerror = function () {
+        input.value = '';
+        alert('That file could not be read. Your current plan is untouched.');
+      };
       reader.onload = function () {
-        try {
-          data = migrate(JSON.parse(reader.result));
-          loud();
-        } catch (e) {
-          alert('That file could not be read as a backup.');
+        input.value = '';
+        var parsed = null;
+        try { parsed = JSON.parse(reader.result); } catch (e) { parsed = null; }
+        // Nothing is replaced until the whole backup checks out.
+        var clean = parsed === null ? null : validate(parsed);
+        if (!clean) {
+          alert("That file isn't a complete wedding planner backup, so nothing was changed. Your current plan is still here.");
+          return;
         }
+        if (!window.confirm('Restore this backup? It replaces everything in the planner right now.')) return;
+        data = clean;
+        loadFailed = false;
+        undoable = null;
+        notice = '';
+        tab = 'home';
+        loud();
       };
       reader.readAsText(file);
-      ev.target.value = '';
     },
 
     exportCsv: function () {
-      var rows = [['Name', 'RSVP', 'Meal', 'Plus One']].concat(data.guests.map(function (g) {
-        return [g.name, g.status, g.meal || '', g.plusOne ? 'Yes' : 'No'];
+      var rows = [['Name', 'RSVP', 'Meal', 'Plus One', 'Attending']].concat(data.guests.map(function (g) {
+        return [g.name, g.status, g.meal || '', g.plusOne ? 'Yes' : 'No',
+          g.status === 'Yes' ? (g.plusOne ? 2 : 1) : 0];
       }));
-      var csv = rows.map(function (r) {
-        return r.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(',');
-      }).join('\r\n');
+      var csv = rows.map(function (r) { return r.map(csvCell).join(','); }).join('\r\n');
       download(new Blob([csv], { type: 'text/csv' }), 'guest-list.csv');
     },
 
     reset: function () {
       if (!confirm('Erase everything and start over? This cannot be undone.')) return;
+      if (!confirm('Last check: every guest, vendor, budget figure and diary entry will be erased. Save a backup first if you want one. Erase now?')) return;
       data = defaultData();
       tab = 'home';
+      undoable = null;
+      notice = '';
+      loadFailed = false;
+      setupError = '';
+      setupDraft = null;
       loud();
     }
   };
