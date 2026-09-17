@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="version" content="1.0">
+<title>Start Here — Evermore Wedding Planner</title>
+<style>
+  /* Deliberately no web fonts and no internet requests: this page must read
+     perfectly on a computer that has never been online. */
+  :root {
+    --bg:#faf6f0; --card:#fdfaf6; --line:#e8e0d6; --ink:#2e2521; --body:#5d5049;
+    --muted:#8a7a6e; --deep:#4a2f28; --blush:#f2e4dc; --accent:#a8705a; --warn:#8a5a24;
+    --serif: Georgia, 'Times New Roman', 'Cormorant Garamond', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+    font-size:16px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:760px; margin:0 auto; padding:56px 24px 90px; }
+  header { text-align:center; margin-bottom:46px; }
+  .brand { font-family:var(--serif); font-style:italic; font-size:40px; color:var(--deep); line-height:1.1; }
+  .kicker {
+    font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent); margin-top:14px; font-weight:600;
+  }
+  h2 {
+    font-family:var(--serif); font-size:25px; font-weight:600; color:var(--deep);
+    margin:44px 0 12px; line-height:1.25;
+  }
+  h3 { font-size:16px; margin:26px 0 6px; color:var(--ink); }
+  p, li { color:var(--body); }
+  p { margin:0 0 14px; }
+  ul, ol { margin:0 0 14px; padding-left:22px; }
+  li { margin-bottom:8px; }
+  a { color:var(--accent); }
+  .card {
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:24px 26px; margin:0 0 18px;
+  }
+  .step { display:flex; gap:16px; align-items:flex-start; margin-bottom:18px; }
+  .num {
+    flex:0 0 32px; height:32px; border-radius:50%; background:var(--deep); color:#fdfaf6;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:600; margin-top:2px;
+  }
+  .step > div:last-child { min-width:0; }
+  .note { background:var(--blush); border-radius:8px; padding:16px 20px; margin:0 0 18px; }
+  .warn { background:#f7ecd6; border-radius:8px; padding:16px 20px; margin:0 0 18px; color:#5f4a1f; }
+  .warn strong, .note strong { color:var(--deep); }
+  code {
+    background:#f0e9e1; border-radius:4px; padding:1px 6px;
+    font-family:ui-monospace, Menlo, Consolas, monospace; font-size:.92em; color:var(--deep);
+  }
+  .toc { columns:2; column-gap:30px; font-size:15px; }
+  .toc a { display:block; margin-bottom:7px; text-decoration:none; }
+  .toc a:hover { text-decoration:underline; }
+  footer {
+    margin-top:54px; padding-top:22px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:14px; text-align:center;
+  }
+  .q { font-weight:600; color:var(--ink); margin:22px 0 4px; }
+  @media (max-width:560px) {
+    .wrap { padding:36px 18px 70px; }
+    .brand { font-size:32px; }
+    .toc { columns:1; }
+    .card { padding:20px; }
+  }
+  @media print {
+    body { background:#fff; }
+    .wrap { padding:0; max-width:none; }
+    .card, .note, .warn { border:1px solid #ddd; background:#fff; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">Evermore</div>
+    <div class="kicker">Wedding Planner &middot; Start Here</div>
+  </header>
+
+  <div class="card">
+    <p style="margin-bottom:10px;"><strong>Welcome, and congratulations.</strong> This is a one-page guide
+    to your planner. It takes about four minutes to read, and the most important part is
+    <a href="#backups">Save a backup</a>.</p>
+    <div class="toc">
+      <a href="#open">1. Open the planner</a>
+      <a href="#first">2. Your first few minutes</a>
+      <a href="#saved">3. Where your plan is saved</a>
+      <a href="#backups">4. Save a backup</a>
+      <a href="#restore">5. Restore a backup</a>
+      <a href="#erase">6. What can erase your plan</a>
+      <a href="#move">7. Move to another computer</a>
+      <a href="#csv">8. Export the guest list</a>
+      <a href="#print">9. Print or save as PDF</a>
+      <a href="#browsers">10. Recommended browsers</a>
+      <a href="#trouble">11. Troubleshooting</a>
+      <a href="#support">12. Support</a>
+    </div>
+  </div>
+
+  <h2 id="open">1. Open the planner</h2>
+
+  <div class="step">
+    <div class="num">1</div>
+    <div>
+      <h3 style="margin-top:0;">Unzip the folder</h3>
+      <p>You downloaded a <code>.zip</code> file. Unzip it before you start &mdash; the planner will not
+      save your work properly from inside a zip.</p>
+      <ul>
+        <li><strong>Windows:</strong> right-click the zip &rarr; <em>Extract All&hellip;</em> &rarr; <em>Extract</em>.</li>
+        <li><strong>Mac:</strong> double-click the zip. A folder appears beside it.</li>
+      </ul>
+      <p>Put the unzipped folder somewhere you will not lose it &mdash; Documents is ideal. Not Downloads,
+      which people tend to empty.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">2</div>
+    <div>
+      <h3 style="margin-top:0;">Double-click <code>Evermore-Wedding-Planner.html</code></h3>
+      <p>It opens in your web browser and you can start straight away.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">3</div>
+    <div>
+      <h3 style="margin-top:0;">Bookmark it</h3>
+      <p>Once it is open, bookmark the page (<code>Ctrl</code>+<code>D</code>, or <code>&#8984;</code>+<code>D</code>
+      on a Mac) so you can get back to it in one click. Keep using that same bookmark, in that same browser &mdash;
+      that is where your plan lives.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>No installing, no account, no internet needed.</strong> There is nothing to set up and nothing to
+    sign into. The planner is a single file that runs inside your browser, on your computer, offline. Nothing
+    you type is ever sent anywhere.
+  </div>
+
+  <h2 id="first">2. Your first few minutes</h2>
+  <p>The planner asks for both of your names and your wedding date, then opens on <strong>Home</strong>.
+  Work through the tabs in whatever order suits you:</p>
+  <ul>
+    <li><strong>Budget</strong> &mdash; set a planned amount per category, then record what you actually spend.
+    Leave everything at 0 and it simply says "Budget not set".</li>
+    <li><strong>Guests</strong> &mdash; add names, mark RSVPs, note meals and plus-ones. The counts at the top
+    only ever count confirmed yes guests and their confirmed plus-ones.</li>
+    <li><strong>Timeline</strong> &mdash; a full checklist, with each phase dated backwards from your wedding day
+    so you can see what is due now and what has slipped.</li>
+    <li><strong>Vendors</strong> &mdash; contacts, booking status, total cost, deposit, what you have paid, what
+    is still owed, and which payments are due or overdue.</li>
+    <li><strong>Diary</strong> and <strong>Vows</strong> &mdash; private notes, and a place to draft your vows
+    with a word count and a spoken-time estimate.</li>
+    <li><strong>Settings</strong> &mdash; your names, your date, your currency, backups, and start-over.</li>
+  </ul>
+  <p>Everything saves itself as you type. There is no save button, and you will never lose a keystroke to a
+  forgotten one.</p>
+
+  <h2 id="saved">3. Where your plan is saved</h2>
+  <p>Your plan is stored by <strong>the browser you opened it in, on the computer you opened it on</strong>.
+  That is what makes it private &mdash; there is no server and no account, so nobody but you can see it.</p>
+  <p>It also means the plan does not follow you around. If you open the planner in a different browser
+  (say you normally use Chrome and one day open it in Edge), or on a different computer, that copy starts
+  empty. To carry your plan across, use a backup file &mdash; that is next.</p>
+
+  <h2 id="backups">4. Save a backup</h2>
+  <p>This is the one habit worth having. Go to <strong>Settings &rarr; Backup &rarr; Save backup file</strong>.
+  A file called <code>wedding-planner-backup.json</code> lands in your Downloads folder. Keep it somewhere safe:
+  email it to yourself, drop it in your cloud storage, put it on a USB stick.</p>
+  <p>Do it:</p>
+  <ul>
+    <li>after any big planning session;</li>
+    <li>before you clear your browsing data, run a "cleaner" program, or update your computer;</li>
+    <li>before switching browsers or computers;</li>
+    <li>once a month, roughly, because it takes five seconds.</li>
+  </ul>
+  <div class="note">
+    <strong>If the planner ever tells you a change was not saved</strong> &mdash; a red bar at the top of the
+    page &mdash; your browser has refused to store it (usually a full disk, or a private window). Nothing you
+    typed is lost from the screen, but it will go when you close the tab. Use <em>Save backup file</em>
+    immediately, then reopen the planner normally and restore it.
+  </div>
+
+  <h2 id="restore">5. Restore a backup</h2>
+  <ol>
+    <li>Open the planner.</li>
+    <li>Go to <strong>Settings &rarr; Backup &rarr; Restore from backup</strong>.</li>
+    <li>Pick your <code>wedding-planner-backup.json</code> file and confirm.</li>
+  </ol>
+  <p>Restoring replaces everything currently in the planner with the contents of that file, so save a fresh
+  backup first if the current plan has anything you want to keep.</p>
+  <p>If the file is incomplete or damaged, the planner will say so and change nothing at all. Your current
+  plan is never half-replaced.</p>
+
+  <h2 id="erase">6. What can erase your plan</h2>
+  <div class="warn">
+    <strong>Clearing your browser data can delete your plan.</strong> Anything that clears "cookies and site
+    data" for local files will take your plan with it: browser cleanup tools, "clear browsing data" with site
+    data ticked, tune-up or privacy apps, resetting the browser, or a new browser profile. Keep a recent
+    backup file and this is a non-event.
+  </div>
+  <p>Also worth knowing:</p>
+  <ul>
+    <li><strong>Private / Incognito windows forget everything</strong> when you close them. Do not plan a
+    wedding in one.</li>
+    <li><strong>Moving or renaming the folder</strong> after you start can make the browser treat it as a
+    different page, with an empty plan. If that happens, move it back, or restore your backup.</li>
+    <li>Deleting the <code>.html</code> file removes the planner, though your saved plan stays in the browser
+    until the browser data is cleared.</li>
+  </ul>
+
+  <h2 id="move">7. Move to another computer</h2>
+  <ol>
+    <li>On the old computer: <strong>Settings &rarr; Save backup file</strong>.</li>
+    <li>Copy two things to the new computer: the unzipped planner folder, and that backup file.</li>
+    <li>On the new computer: open <code>Evermore-Wedding-Planner.html</code>, then
+    <strong>Settings &rarr; Restore from backup</strong> and pick the file.</li>
+  </ol>
+  <p>The same three steps work for planning on two computers at once &mdash; say one each. Just remember there
+  is no automatic syncing: whoever makes changes saves a backup, and the other person restores it. Two people
+  editing at the same time will overwrite each other, so take turns.</p>
+
+  <h2 id="csv">8. Export the guest list</h2>
+  <p><strong>Guests &rarr; Export CSV</strong> saves <code>guest-list.csv</code> to your Downloads folder. It
+  opens in Excel, Numbers, Google Sheets or anything else that reads spreadsheets, with a column for the name,
+  the RSVP, the meal, the plus-one, the plus-one's name and how many seats that row needs.</p>
+  <p>Handy for sending a final headcount to your caterer, or for building a seating chart.</p>
+
+  <h2 id="print">9. Print or save as PDF</h2>
+  <p>Any tab prints from your browser (<code>Ctrl</code>+<code>P</code>, or <code>&#8984;</code>+<code>P</code>
+  on a Mac). In the print dialog, choose <em>Save as PDF</em> as the destination instead of a printer, and you
+  have a file to keep or send.</p>
+  <p>The <strong>keepsake</strong> is made for this: mark diary entries with "include in keepsake", then use the
+  keepsake view's <em>Print / Save as PDF</em> button. It prints as clean typeset pages, with the buttons and
+  navigation left out.</p>
+
+  <h2 id="browsers">10. Recommended browsers</h2>
+  <p>Evermore v1.0 is built and tested on <strong>Google Chrome</strong> and <strong>Microsoft Edge</strong>
+  (current versions). Those are the safe choice.</p>
+  <p>It uses nothing exotic, so other current browsers &mdash; Firefox, Safari, Brave, Opera &mdash; should work
+  too. If anything looks or behaves oddly in one of those, open it in Chrome or Edge instead and it will be fine.
+  Internet Explorer is not supported.</p>
+
+  <h2 id="trouble">11. Troubleshooting</h2>
+
+  <div class="q">The file opens as code, or in a text editor</div>
+  <p>Right-click it &rarr; <em>Open with</em> &rarr; your browser. To make that permanent, use
+  <em>Open with &rarr; Choose another app</em> (Windows) or <em>Get Info &rarr; Open with</em> (Mac) and set
+  your browser as the default for <code>.html</code> files.</p>
+
+  <div class="q">The page is blank</div>
+  <p>Make sure you unzipped the folder first, and that you are opening
+  <code>Evermore-Wedding-Planner.html</code> rather than the zip. Then refresh the page.</p>
+
+  <div class="q">The fonts look different from the shop photos</div>
+  <p>That is expected when you are offline. The planner asks the internet for two typefaces; with no connection
+  it politely uses your computer's own instead. Everything works identically &mdash; only the lettering differs.
+  Connect to the internet and refresh to see the original type.</p>
+
+  <div class="q">My plan is gone</div>
+  <p>Check three things: are you in the same browser you started in; are you opening it from the same folder;
+  and have you cleared browsing data recently? If none of those explains it, restore your most recent backup
+  file from <strong>Settings &rarr; Restore from backup</strong>.</p>
+
+  <div class="q">Settings will not accept my change</div>
+  <p>The planner needs both names and a wedding date that has not already passed, so it refuses an empty name
+  or a past date and tells you why, rather than saving something broken. Your previous details stay in place
+  until you enter something it can use.</p>
+
+  <div class="q">A vendor row says "Check this"</div>
+  <p>That means the booking status and the money recorded disagree &mdash; for example "Paid in Full" with
+  nothing paid. Nothing has been changed for you; update whichever of the two is out of date.</p>
+
+  <div class="q">Nothing downloads when I save a backup or a CSV</div>
+  <p>Look for a blocked-download notice in your browser's address bar and allow it, then try again. Also check
+  your Downloads folder &mdash; the file often arrives without any visible fuss.</p>
+
+  <div class="q">The date field behaves strangely</div>
+  <p>Date fields are drawn by your browser, not by the planner, so they look and work slightly differently in
+  each one. Typing the date in the format your browser shows always works.</p>
+
+  <h2 id="support">12. Support</h2>
+  <div class="card">
+    <p style="margin-bottom:6px;"><strong>Questions, or something not behaving?</strong></p>
+    <p style="margin-bottom:10px;">Message me through the shop &mdash; Etsy &rarr; <em>Purchases and reviews</em>
+    &rarr; <em>Contact shop</em> &mdash; or email:</p>
+    <p style="margin-bottom:10px;"><strong>[ADD YOUR SUPPORT EMAIL HERE]</strong></p>
+    <p style="margin-bottom:0;color:var(--muted);font-size:14.5px;">Please include which browser you are using
+    (Chrome, Edge, Firefox, Safari) and what you were doing at the time. If you can, attach your backup file
+    &mdash; it makes almost anything diagnosable.</p>
+  </div>
+
+  <footer>
+    Evermore Wedding Planner &middot; Version 1.0<br>
+    Your purchase is covered by the personal-use license in <strong>LICENSE.txt</strong>.<br>
+    Thank you for choosing Evermore &mdash; enjoy the planning, and the day.
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+EVERMORE WEDDING PLANNER — LICENSE
+Version 1.0
+
+Thank you for buying Evermore. Please read this short license; it is
+written in plain English on purpose.
+
+
+WHAT YOU MAY DO
+
+  * Use this planner for your own wedding, and for the weddings of your
+    immediate family and close friends, for as long as you like.
+  * Install it on as many of your own devices as you want (your laptop,
+    your partner's laptop, a tablet, a desktop).
+  * Keep your own copies and backups of the files and of the backup files
+    the planner saves.
+  * Print anything the planner produces — your keepsake pages, your guest
+    list, your budget — for your own use.
+
+
+WHAT YOU MAY NOT DO
+
+  * Resell, resell "as a template", sublicense, rent or otherwise sell
+    this planner or any part of it, whether changed or unchanged.
+  * Give it away, share it, upload it or redistribute it — including on
+    marketplaces, file-sharing sites, Google Drive links, Facebook
+    groups, Discord servers, course bundles, freebie lists or your own
+    website.
+  * Change the planner and then sell or distribute the changed version,
+    or present it as your own work or your own product.
+  * Remove or hide the Evermore name or this license from the files.
+  * Use it to run a paid service, a paid template shop or a subscription
+    of any kind.
+
+You are welcome to tinker with your own copy for your own wedding. What
+you may not do is pass that copy, or anything made from it, to anyone
+else.
+
+
+ONE PURCHASE, ONE HOUSEHOLD
+
+This license covers one buyer and their household. If you are a wedding
+planner, a venue, a stationer or any other business that wants to use
+Evermore with clients, please get in touch for a commercial license.
+
+
+NO WARRANTY
+
+Evermore is provided "as is". It stores everything in your own web
+browser on your own computer; nothing is sent anywhere. Because of that,
+YOU are responsible for keeping backups, and the planner gives you a
+"Save backup file" button for exactly that reason. To the fullest extent
+allowed by law, the seller is not liable for any lost data, lost plans,
+missed deadlines, or any other loss arising from the use of this planner.
+
+Your statutory consumer rights are not affected by anything in this
+license.
+
+
+COPYRIGHT
+
+Copyright (c) 2026. All rights reserved.
+
+The Cormorant Garamond and Inter typefaces are not included in this
+download. If your computer is online, the planner loads them from Google
+Fonts; if it is offline, it simply uses your system's own fonts instead.
+Those typefaces remain the property of their respective owners and are
+used under their own licenses.
