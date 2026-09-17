@@ -42,6 +42,8 @@
       .setup-grid { grid-template-columns:1fr; }
     }
     @media (max-width:520px) {
+      .money-row label { flex:1 1 100%; }
+      .money-row input[type="number"] { width:100% !important; }
       .wrap { padding:22px 16px 72px; }
       .topbar { padding:12px 16px; gap:12px; }
       .card { padding:20px !important; }
@@ -195,6 +197,34 @@
             <label style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);">The vibe
               <input id="details-vibe" value="{{ profileVibe }}" onChange="{{ onProfileVibeChange }}" style="display:block;width:100%;margin-top:6px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:8px 10px;font-size:13.5px;letter-spacing:normal;text-transform:none;color:oklch(28% 0.02 40);" />
             </label>
+            <label style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);">Currency
+              <select id="details-currency" value="{{ profileCurrency }}" onChange="{{ onProfileCurrencyChange }}" style="display:block;width:100%;margin-top:6px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:8px 10px;font-size:13.5px;letter-spacing:normal;text-transform:none;color:oklch(28% 0.02 40);">
+                <option value="$">$&nbsp; Dollar (USD)</option>
+                <option value="£">£&nbsp; Pound (GBP)</option>
+                <option value="€">€&nbsp; Euro (EUR)</option>
+                <option value="A$">A$&nbsp; Australian dollar</option>
+                <option value="C$">C$&nbsp; Canadian dollar</option>
+                <option value="NZ$">NZ$&nbsp; New Zealand dollar</option>
+                <option value="¥">¥&nbsp; Yen / Yuan</option>
+                <option value="₹">₹&nbsp; Rupee (INR)</option>
+                <option value="R">R&nbsp; Rand (ZAR)</option>
+                <option value="R$">R$&nbsp; Real (BRL)</option>
+                <option value="Mex$">Mex$&nbsp; Mexican peso</option>
+                <option value="₱">₱&nbsp; Philippine peso</option>
+                <option value="₩">₩&nbsp; Won (KRW)</option>
+                <option value="฿">฿&nbsp; Baht (THB)</option>
+                <option value="₦">₦&nbsp; Naira (NGN)</option>
+                <option value="RM">RM&nbsp; Ringgit (MYR)</option>
+                <option value="S$">S$&nbsp; Singapore dollar</option>
+                <option value="HK$">HK$&nbsp; Hong Kong dollar</option>
+                <option value="kr">kr&nbsp; Krone / Krona</option>
+                <option value="zł">zł&nbsp; Złoty (PLN)</option>
+                <option value="CHF">CHF&nbsp; Swiss franc</option>
+                <option value="AED">AED&nbsp; Dirham</option>
+                <option value="₪">₪&nbsp; Shekel (ILS)</option>
+                <option value="₺">₺&nbsp; Lira (TRY)</option>
+              </select>
+            </label>
           </div>
           <sc-if value="{{ detailsWarning }}" hint-placeholder-val="{{ false }}">
             <div role="alert" style="font-size:12.5px;color:oklch(45% 0.1 30);margin-top:12px;">Both names and a wedding date keep your countdown and RSVP link working.</div>
@@ -292,10 +322,11 @@
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
               </select>
-              <input placeholder="meal" value="{{ g.meal }}" onChange="{{ g.onMealChange }}" aria-label="{{ g.mealLabel }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:6px 8px;font-size:13px;width:110px;" />
+              <input placeholder="{{ g.mealPlaceholder }}" value="{{ g.meal }}" disabled="{{ g.mealDisabled }}" onChange="{{ g.onMealChange }}" aria-label="{{ g.mealLabel }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:6px 8px;font-size:13px;width:110px;" />
               <label style="font-size:12.5px;color:{{ g.plusOneColor }};display:flex;align-items:center;gap:5px;">
                 <input type="checkbox" checked="{{ g.plusOne }}" disabled="{{ g.plusOneDisabled }}" onChange="{{ g.onPlusOneChange }}" aria-label="{{ g.plusOneLabel }}" /> +1
               </label>
+              <input placeholder="+1 name" value="{{ g.plusOneName }}" disabled="{{ g.plusOneNameDisabled }}" onChange="{{ g.onPlusOneNameChange }}" aria-label="{{ g.plusOneNameLabel }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:6px 8px;font-size:13px;width:124px;" />
               <button type="button" class="remove-btn" onClick="{{ g.onRemove }}" aria-label="{{ g.removeLabel }}" title="{{ g.removeLabel }}">&times;</button>
             </div>
           </sc-for>
@@ -311,13 +342,26 @@
     </sc-if>
 
     <sc-if value="{{ isTimeline }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <sc-if value="{{ timelineDated }}" hint-placeholder-val="{{ false }}">
+          <div class="longtext" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px;font-size:13.5px;color:oklch(40% 0.02 40);">
+            <span style="background:{{ timelineSummaryBg }};color:{{ timelineSummaryColor }};padding:3px 10px;border-radius:10px;font-size:11.5px;font-weight:600;">{{ timelineSummary }}</span>
+            <span>{{ timelineFocus }}</span>
+          </div>
+        </sc-if>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
         <sc-for list="{{ phaseRows }}" as="p" hint-placeholder-count="6">
-          <div style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:24px;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;">
-              <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;">{{ p.phase }}</div>
+          <div class="phase-card" style="background:oklch(98% 0.01 60);border:1px solid {{ p.phaseBorder }};border-radius:8px;padding:24px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+              <div class="longtext" style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;">{{ p.phase }}</div>
               <div style="font-size:12px;color:oklch(55% 0.02 40);">{{ p.progressLabel }}</div>
             </div>
+            <sc-if value="{{ p.showPhaseTag }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-bottom:8px;"><span style="background:{{ p.phaseTagBg }};color:{{ p.phaseTagColor }};padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600;">{{ p.phaseTag }}</span></div>
+            </sc-if>
+            <sc-if value="{{ p.showWhen }}" hint-placeholder-val="{{ false }}">
+              <div class="longtext" style="font-size:12px;color:oklch(52% 0.02 40);margin-bottom:12px;">{{ p.whenLabel }}</div>
+            </sc-if>
             <sc-for list="{{ p.tasks }}" as="t" hint-placeholder-count="4">
               <label style="display:flex;align-items:flex-start;gap:9px;margin-bottom:10px;cursor:pointer;">
                 <input type="checkbox" checked="{{ t.done }}" onChange="{{ t.onToggle }}" style="margin-top:2px;" />
@@ -330,9 +374,35 @@
           </div>
         </sc-for>
       </div>
+      </div>
     </sc-if>
 
     <sc-if value="{{ isVendors }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <sc-if value="{{ hasVendors }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="display:flex;gap:34px;flex-wrap:wrap;margin-bottom:16px;">
+              <div>
+                <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);">Total cost</div>
+                <div id="vendor-total-cost" style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;">{{ vendorTotalCost }}</div>
+              </div>
+              <div>
+                <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);">Paid</div>
+                <div id="vendor-total-paid" style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;">{{ vendorTotalPaid }}</div>
+              </div>
+              <div>
+                <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(55% 0.02 40);">Still owed</div>
+                <div id="vendor-balance" style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;">{{ vendorTotalOwed }}</div>
+              </div>
+            </div>
+            <sc-if value="{{ hasVendorLate }}" hint-placeholder-val="{{ false }}">
+              <div id="vendor-overdue" role="alert" class="longtext" style="background:oklch(90% 0.05 70);border-radius:6px;padding:12px 18px;margin-bottom:18px;font-size:13px;color:oklch(32% 0.05 40);">{{ vendorLateLine }}</div>
+            </sc-if>
+            <sc-if value="{{ hasVendorSoon }}" hint-placeholder-val="{{ false }}">
+              <div id="vendor-due-soon" class="longtext" style="background:oklch(93% 0.03 70);border-radius:6px;padding:12px 18px;margin-bottom:18px;font-size:13px;color:oklch(35% 0.04 50);">{{ vendorSoonLine }}</div>
+            </sc-if>
+          </div>
+        </sc-if>
       <div class="card" style="background:oklch(98% 0.01 60);border:1px solid oklch(90% 0.015 55);border-radius:8px;padding:28px;">
         <sc-for list="{{ vendorRows }}" as="v" hint-placeholder-count="4">
           <div class="vendor-row" style="padding:12px 0;border-bottom:1px solid oklch(93% 0.01 55);">
@@ -346,6 +416,29 @@
               <option>Paid in Full</option>
             </select>
             <button type="button" class="remove-btn" onClick="{{ v.onRemove }}" aria-label="{{ v.removeLabel }}" title="{{ v.removeLabel }}" style="justify-self:start;">&times;</button>
+            <div class="money-row" style="grid-column:1 / -1;display:flex;gap:12px;align-items:center;font-size:12px;color:oklch(50% 0.02 40);flex-wrap:wrap;margin-top:4px;">
+              <label style="display:flex;gap:6px;align-items:center;">total cost
+                <input type="number" min="0" step="50" value="{{ v.cost }}" onChange="{{ v.onCostChange }}" aria-label="{{ v.costLabel }}" style="width:96px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:4px 6px;font-size:12px;" />
+              </label>
+              <label style="display:flex;gap:6px;align-items:center;">deposit
+                <input type="number" min="0" step="50" value="{{ v.depositAmount }}" onChange="{{ v.onDepositAmountChange }}" aria-label="{{ v.depositAmountLabel }}" style="width:96px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:4px 6px;font-size:12px;" />
+              </label>
+              <label style="display:flex;gap:6px;align-items:center;">paid so far
+                <input type="number" min="0" step="50" value="{{ v.paidAmount }}" onChange="{{ v.onPaidAmountChange }}" aria-label="{{ v.paidAmountLabel }}" style="width:96px;border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:4px 6px;font-size:12px;" />
+              </label>
+              <sc-if value="{{ v.showBalance }}" hint-placeholder-val="{{ false }}">
+                <span class="longtext" style="color:oklch(30% 0.02 40);">{{ v.balanceLabel }}</span>
+              </sc-if>
+              <sc-if value="{{ v.paidInFull }}" hint-placeholder-val="{{ false }}">
+                <span style="background:oklch(90% 0.05 145);color:oklch(30% 0.06 145);padding:2px 8px;border-radius:10px;font-size:11px;">paid in full</span>
+              </sc-if>
+              <sc-if value="{{ v.overpaid }}" hint-placeholder-val="{{ false }}">
+                <span style="background:oklch(88% 0.06 40);color:oklch(30% 0.06 30);padding:2px 8px;border-radius:10px;font-size:11px;">{{ v.overpaidLabel }}</span>
+              </sc-if>
+              <sc-if value="{{ v.showPaidOnly }}" hint-placeholder-val="{{ false }}">
+                <span class="longtext">{{ v.paidOnlyLabel }}</span>
+              </sc-if>
+            </div>
             <div style="grid-column:1 / -1;display:flex;gap:14px;align-items:center;font-size:12px;color:oklch(50% 0.02 40);flex-wrap:wrap;">
               <label style="display:flex;gap:6px;align-items:center;">deposit due <input type="date" value="{{ v.deposit }}" onChange="{{ v.onDepositChange }}" style="border:1px solid oklch(88% 0.015 55);border-radius:5px;padding:4px 6px;font-size:12px;" /></label>
               <sc-if value="{{ v.depositOverdue }}" hint-placeholder-val="{{ false }}">
@@ -365,6 +458,7 @@
           </div>
         </sc-for>
         <button type="button" onClick="{{ addVendor }}" style="border:1px solid oklch(80% 0.02 50);background:none;color:oklch(40% 0.02 40);padding:9px 16px;border-radius:16px;font-size:13px;cursor:pointer;margin-top:16px;">+ Add vendor</button>
+      </div>
       </div>
     </sc-if>
 
@@ -509,7 +603,27 @@ const DEPOSIT_PAID_STATUSES = ['Deposit Paid', 'Contracted', 'Paid in Full'];
 
 function daysBetween(a, b) { return Math.ceil((b - a) / 86400000); }
 function fmtDate(d) { return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
-function fmtMoney(n) { const v = Math.round(num(n)); return (v < 0 ? '-$' : '$') + Math.abs(v).toLocaleString(); }
+/* The symbol the couple chose under Our Details. Set once per render from
+   the saved profile, so every figure on the page agrees. */
+const CURRENCIES = [
+  ['$', '$  Dollar (USD)'], ['\u00a3', '\u00a3  Pound (GBP)'], ['\u20ac', '\u20ac  Euro (EUR)'],
+  ['A$', 'A$  Australian dollar'], ['C$', 'C$  Canadian dollar'], ['NZ$', 'NZ$  New Zealand dollar'],
+  ['\u00a5', '\u00a5  Yen / Yuan'], ['\u20b9', '\u20b9  Rupee (INR)'], ['R', 'R  Rand (ZAR)'],
+  ['R$', 'R$  Real (BRL)'], ['Mex$', 'Mex$  Mexican peso'], ['\u20b1', '\u20b1  Philippine peso'],
+  ['\u20a9', '\u20a9  Won (KRW)'], ['\u0e3f', '\u0e3f  Baht (THB)'], ['\u20a6', '\u20a6  Naira (NGN)'],
+  ['RM', 'RM  Ringgit (MYR)'], ['S$', 'S$  Singapore dollar'], ['HK$', 'HK$  Hong Kong dollar'],
+  ['kr', 'kr  Krone / Krona'], ['z\u0142', 'z\u0142  Z\u0142oty (PLN)'], ['CHF', 'CHF  Swiss franc'],
+  ['AED', 'AED  Dirham'], ['\u20aa', '\u20aa  Shekel (ILS)'], ['\u20ba', '\u20ba  Lira (TRY)']
+];
+/** Never blank, never long enough to break a layout. */
+function curSym(v) { const t = String(v == null ? '' : v).trim().slice(0, 4); return t || '$'; }
+let CURRENCY = '$';
+function fmtMoney(n) {
+  const v = Math.round(num(n));
+  // 'CHF 1,200' reads properly; '$1,200' should not gain a space.
+  const gap = /[A-Za-z]$/.test(CURRENCY) ? ' ' : '';
+  return (v < 0 ? '-' : '') + CURRENCY + gap + Math.abs(v).toLocaleString();
+}
 function seededPick(arr, seed) { return arr[Math.abs(seed) % arr.length]; }
 function num(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
 function isIsoDate(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(new Date(s + 'T00:00:00').getTime()); }
@@ -542,6 +656,61 @@ function paymentFlag(iso, paid) {
   return null;
 }
 
+/* A payment counts as made either from the booking status or from the money
+   actually recorded, so a badge never nags about something already covered. */
+function depositSettled(v) {
+  if (DEPOSIT_PAID_STATUSES.indexOf(v.status) !== -1) return true;
+  const d = num(v.depositAmount);
+  return d > 0 && num(v.paidAmount) >= d;
+}
+function finalSettled(v) {
+  if (v.status === 'Paid in Full') return true;
+  const c = num(v.cost);
+  return c > 0 && num(v.paidAmount) >= c;
+}
+function vendorMoney(v) {
+  const cost = Math.max(0, num(v.cost));
+  const paid = Math.max(0, num(v.paidAmount));
+  return { cost, paid, deposit: Math.max(0, num(v.depositAmount)), balance: cost - paid };
+}
+
+/* Phases are named relative to the day ('6 Months Out'), so the wedding date
+   is what turns them into real deadlines. */
+function phaseTargetIso(phase, weddingIso) {
+  if (!isIsoDate(weddingIso)) return '';
+  const wed = new Date(weddingIso + 'T00:00:00');
+  const m = /(\d+)\s*month/i.exec(phase);
+  const d = new Date(wed.getTime());
+  if (m) {
+    const day = d.getDate();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - Number(m[1]));
+    // Clamp to a shorter month: 31 May minus 3 months is 28/29 Feb.
+    const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    d.setDate(Math.min(day, last));
+  } else if (/week/i.test(phase)) {
+    d.setDate(d.getDate() - 7);
+  } else {
+    return '';
+  }
+  const mm = d.getMonth() + 1, dd = d.getDate();
+  return d.getFullYear() + '-' + (mm < 10 ? '0' : '') + mm + '-' + (dd < 10 ? '0' : '') + dd;
+}
+
+/** done | overdue | now | later | undated, plus what is left in the phase. */
+function phaseState(p, weddingIso) {
+  const left = p.tasks.filter(t => !t.done).length;
+  const iso = phaseTargetIso(p.phase, weddingIso);
+  const days = iso ? daysUntil(iso) : null;
+  const span = /week/i.test(p.phase) ? 7 : 30;
+  const status = !p.tasks.length || left === 0 ? 'done'
+    : days === null ? 'undated'
+    : days < 0 ? 'overdue'
+    : days <= span ? 'now'
+    : 'later';
+  return { left, iso, days, status };
+}
+
 /**
  * Returns a clean, fully-typed copy of `raw` when it is a complete backup,
  * or null when anything is missing or the wrong type. Callers must treat null
@@ -558,6 +727,7 @@ function validateData(raw) {
   if (p.vibe != null && typeof p.vibe !== 'string') return null;
   if (p.story != null && typeof p.story !== 'string') return null;
   if (p.budgetTotal != null && !Number.isFinite(Number(p.budgetTotal))) return null;
+  if (p.currency != null && typeof p.currency !== 'string') return null;
 
   if (!isObj(raw.budget) || !Array.isArray(raw.budget.categories)) return null;
   const categories = [];
@@ -574,7 +744,12 @@ function validateData(raw) {
     if (GUEST_STATUSES.indexOf(g.status) === -1) return null;
     if (g.meal != null && typeof g.meal !== 'string') return null;
     if (g.plusOne != null && typeof g.plusOne !== 'boolean') return null;
-    guests.push({ name: g.name, status: g.status, meal: g.meal || '', plusOne: g.status !== 'No' && g.plusOne === true });
+    if (g.plusOneName != null && typeof g.plusOneName !== 'string') return null;
+    // A declined guest has no meal and no plus-one, whatever the file says.
+    const declined = g.status === 'No';
+    const hasPlus = !declined && g.plusOne === true;
+    guests.push({ name: g.name, status: g.status, meal: declined ? '' : (g.meal || ''),
+      plusOne: hasPlus, plusOneName: hasPlus ? (g.plusOneName || '') : '' });
   }
 
   if (!Array.isArray(raw.vendors)) return null;
@@ -588,8 +763,14 @@ function validateData(raw) {
       if (v[k] == null || v[k] === '') continue;
       if (!isIsoDate(v[k])) return null;
     }
+    for (const k of ['cost', 'depositAmount', 'paidAmount']) {
+      if (v[k] == null || v[k] === '') continue;
+      if (!Number.isFinite(Number(v[k]))) return null;
+    }
     vendors.push({ name: v.name, category: v.category || '', contact: v.contact || '', status: v.status,
-      deposit: v.deposit || '', final: v.final || '' });
+      deposit: v.deposit || '', final: v.final || '',
+      cost: Math.max(0, num(v.cost)), depositAmount: Math.max(0, num(v.depositAmount)),
+      paidAmount: Math.max(0, num(v.paidAmount)) });
   }
 
   if (!Array.isArray(raw.timeline)) return null;
@@ -623,14 +804,14 @@ function validateData(raw) {
 
   return {
     profile: { partnerA: p.partnerA, partnerB: p.partnerB, date: p.date, budgetTotal: num(p.budgetTotal),
-      vibe: p.vibe || '', story: p.story || '' },
+      vibe: p.vibe || '', story: p.story || '', currency: curSym(p.currency) },
     budget: { categories }, guests, vendors, timeline, diary, vows,
   };
 }
 
 function defaultData() {
   return {
-    profile: { partnerA: 'Sarah', partnerB: 'Mike', date: '2027-06-12', budgetTotal: 35000, vibe: 'cozy backyard',
+    profile: { partnerA: 'Sarah', partnerB: 'Mike', date: '2027-06-12', budgetTotal: 35000, vibe: 'cozy backyard', currency: '$',
       story: "We met at a friend's rooftop party in the rain and didn't leave for three hours. Two years, one rescue dog, and a lot of very specific opinions about pasta later — we're doing this." },
     budget: { categories: [
       { name: 'Venue', planned: 12000, spent: 12000 },
@@ -704,7 +885,7 @@ function defaultData() {
 /** A couple's own planner: the checklist stays, the sample content doesn't. */
 function freshData(partnerA, partnerB, date, vibe, budgetTotal) {
   const d = defaultData();
-  d.profile = { partnerA, partnerB, date, budgetTotal: num(budgetTotal), vibe: vibe || '', story: '' };
+  d.profile = { partnerA, partnerB, date, budgetTotal: num(budgetTotal), vibe: vibe || '', story: '', currency: '$' };
   d.budget.categories = d.budget.categories.map(c => ({ name: c.name, planned: 0, spent: 0 }));
   d.guests = [];
   d.vendors = [];
@@ -783,6 +964,8 @@ class Component extends DCLogic {
 
   renderVals() {
     const s = this.state, d = s.data;
+    // Every figure below renders with the couple's chosen symbol.
+    CURRENCY = curSym(d.profile.currency);
     const today = new Date();
     const hasDate = isIsoDate(d.profile.date);
     const daysLeft = hasDate ? Math.max(0, daysBetween(today, new Date(d.profile.date + 'T00:00:00'))) : null;
@@ -842,33 +1025,68 @@ class Component extends DCLogic {
     const confirmedPlusOnes = guestYes.filter(g => g.plusOne === true).length;
     const guestAttending = guestYes.length + confirmedPlusOnes;
 
-    const guestRows = d.guests.map((g, i) => ({
-      name: g.name, status: g.status, meal: g.meal, plusOne: g.status !== 'No' && g.plusOne === true,
-      plusOneDisabled: g.status === 'No',
-      plusOneColor: g.status === 'No' ? 'oklch(70% 0.01 40)' : 'oklch(45% 0.02 40)',
-      isDuplicate: nameCounts[normName(g.name)] > 1,
-      nameLabel: 'Guest name', statusLabel: 'RSVP for ' + (g.name || 'this guest'),
-      mealLabel: 'Meal for ' + (g.name || 'this guest'),
-      plusOneLabel: 'Plus-one attending with ' + (g.name || 'this guest'),
-      removeLabel: 'Remove guest ' + (g.name || 'untitled'),
-      onNameChange: (e) => this.update(dd => { dd.guests[i].name = e.target.value; return dd; }),
-      onStatusChange: (e) => this.update(dd => {
-        const v = GUEST_STATUSES.indexOf(e.target.value) === -1 ? 'Pending' : e.target.value;
-        dd.guests[i].status = v;
-        if (v === 'No') dd.guests[i].plusOne = false;
-        return dd;
-      }),
-      onMealChange: (e) => this.update(dd => { dd.guests[i].meal = e.target.value; return dd; }),
-      onPlusOneChange: (e) => this.update(dd => { dd.guests[i].plusOne = dd.guests[i].status !== 'No' && e.target.checked; return dd; }),
-      onRemove: () => this.removeRow(dd => dd.guests, i, g.name || 'this guest'),
-    }));
+    const guestRows = d.guests.map((g, i) => {
+      const declined = g.status === 'No';
+      const hasPlus = !declined && g.plusOne === true;
+      return {
+        name: g.name, status: g.status, meal: declined ? '' : g.meal, plusOne: hasPlus,
+        plusOneDisabled: declined,
+        // A declined guest needs no meal, so the field says so and locks.
+        mealDisabled: declined, mealPlaceholder: declined ? 'not needed' : 'meal',
+        plusOneName: hasPlus ? (g.plusOneName || '') : '',
+        plusOneNameDisabled: !hasPlus,
+        plusOneColor: declined ? 'oklch(70% 0.01 40)' : 'oklch(45% 0.02 40)',
+        isDuplicate: nameCounts[normName(g.name)] > 1,
+        nameLabel: 'Guest name', statusLabel: 'RSVP for ' + (g.name || 'this guest'),
+        mealLabel: 'Meal for ' + (g.name || 'this guest'),
+        plusOneLabel: 'Plus-one attending with ' + (g.name || 'this guest'),
+        plusOneNameLabel: 'Name of the plus-one for ' + (g.name || 'this guest'),
+        removeLabel: 'Remove guest ' + (g.name || 'untitled'),
+        onNameChange: (e) => this.update(dd => { dd.guests[i].name = e.target.value; return dd; }),
+        onStatusChange: (e) => this.update(dd => {
+          const v = GUEST_STATUSES.indexOf(e.target.value) === -1 ? 'Pending' : e.target.value;
+          dd.guests[i].status = v;
+          // A declined RSVP brings no plus-one and needs no meal, so the
+          // fields that depend on it are cleared with the flag.
+          if (v === 'No') {
+            dd.guests[i].plusOne = false;
+            dd.guests[i].plusOneName = '';
+            dd.guests[i].meal = '';
+          }
+          return dd;
+        }),
+        onMealChange: (e) => this.update(dd => { dd.guests[i].meal = e.target.value; return dd; }),
+        onPlusOneChange: (e) => this.update(dd => {
+          dd.guests[i].plusOne = dd.guests[i].status !== 'No' && e.target.checked;
+          if (!dd.guests[i].plusOne) dd.guests[i].plusOneName = '';
+          return dd;
+        }),
+        onPlusOneNameChange: (e) => this.update(dd => { dd.guests[i].plusOneName = e.target.value; return dd; }),
+        onRemove: () => this.removeRow(dd => dd.guests, i, g.name || 'this guest'),
+      };
+    });
     const duplicateNames = Object.keys(nameCounts).filter(k => nameCounts[k] > 1).length;
 
     const vendorRows = d.vendors.map((v, i) => {
-      const depositFlag = paymentFlag(v.deposit, DEPOSIT_PAID_STATUSES.indexOf(v.status) !== -1);
-      const finalFlag = paymentFlag(v.final, v.status === 'Paid in Full');
+      const depositFlag = paymentFlag(v.deposit, depositSettled(v));
+      const finalFlag = paymentFlag(v.final, finalSettled(v));
+      const m = vendorMoney(v);
       return {
         name: v.name, category: v.category, contact: v.contact, status: v.status, deposit: v.deposit, final: v.final,
+        cost: m.cost, depositAmount: m.deposit, paidAmount: m.paid,
+        showBalance: m.cost > 0 && m.balance > 0,
+        balanceLabel: 'Balance ' + fmtMoney(m.balance) + ' of ' + fmtMoney(m.cost),
+        paidInFull: m.cost > 0 && m.balance === 0,
+        overpaid: m.cost > 0 && m.balance < 0,
+        overpaidLabel: 'overpaid by ' + fmtMoney(-m.balance),
+        showPaidOnly: m.cost === 0 && m.paid > 0,
+        paidOnlyLabel: fmtMoney(m.paid) + ' paid \u2014 no total cost recorded yet',
+        costLabel: 'Total cost for ' + (v.name || 'this vendor'),
+        depositAmountLabel: 'Deposit amount for ' + (v.name || 'this vendor'),
+        paidAmountLabel: 'Amount paid so far to ' + (v.name || 'this vendor'),
+        onCostChange: (e) => this.update(dd => { dd.vendors[i].cost = Math.max(0, num(e.target.value)); return dd; }),
+        onDepositAmountChange: (e) => this.update(dd => { dd.vendors[i].depositAmount = Math.max(0, num(e.target.value)); return dd; }),
+        onPaidAmountChange: (e) => this.update(dd => { dd.vendors[i].paidAmount = Math.max(0, num(e.target.value)); return dd; }),
         depositSoon: depositFlag === 'soon', depositOverdue: depositFlag === 'overdue',
         finalSoon: finalFlag === 'soon', finalOverdue: finalFlag === 'overdue',
         nameLabel: 'Vendor name', categoryLabel: 'Category for ' + (v.name || 'this vendor'),
@@ -884,10 +1102,47 @@ class Component extends DCLogic {
       };
     });
 
+    // 'balance' adds up only what is still owed per vendor, so money paid
+    // ahead to one vendor never hides a debt to another.
+    const vendorTotals = d.vendors.reduce((acc, v) => {
+      const m = vendorMoney(v);
+      return { cost: acc.cost + m.cost, paid: acc.paid + m.paid, balance: acc.balance + Math.max(0, m.balance) };
+    }, { cost: 0, paid: 0, balance: 0 });
+    const vendorLate = d.vendors.filter(v => paymentFlag(v.deposit, depositSettled(v)) === 'overdue'
+      || paymentFlag(v.final, finalSettled(v)) === 'overdue');
+    const vendorSoon = d.vendors.filter(v => paymentFlag(v.deposit, depositSettled(v)) === 'soon'
+      || paymentFlag(v.final, finalSettled(v)) === 'soon');
+
+    // Phase deadlines worked back from the wedding date.
+    let latePhases = 0, livePhase = '';
+    d.timeline.forEach(p => {
+      const st = phaseState(p, d.profile.date);
+      if (st.status === 'overdue') latePhases++;
+      if (st.status === 'now' && !livePhase) livePhase = p.phase;
+    });
+
     const phaseRows = d.timeline.map((p, pi) => {
       const doneCt = p.tasks.filter(t => t.done).length;
+      const st = phaseState(p, d.profile.date);
+      const ago = st.days === null ? ''
+        : st.days < 0 ? Math.abs(st.days) + ' day' + (Math.abs(st.days) === 1 ? '' : 's') + ' ago'
+        : st.days === 0 ? 'today'
+        : 'in ' + st.days + ' day' + (st.days === 1 ? '' : 's');
       return {
         phase: p.phase, progressLabel: doneCt + ' / ' + p.tasks.length,
+        showWhen: !!st.iso,
+        whenLabel: st.iso
+          ? (st.status === 'done' ? 'Was due by ' : 'Finish by ') + fmtDate(st.iso)
+            + (st.status === 'done' ? '' : ' \u00b7 ' + ago)
+          : '',
+        showPhaseTag: st.status === 'overdue' || st.status === 'now' || (st.status === 'done' && p.tasks.length > 0),
+        phaseTag: st.status === 'overdue' ? 'overdue \u00b7 ' + st.left + ' left'
+          : st.status === 'now' ? 'do this now' : 'complete',
+        phaseTagBg: st.status === 'overdue' ? 'oklch(58% 0.15 28)'
+          : st.status === 'now' ? 'oklch(88% 0.06 40)' : 'oklch(90% 0.05 145)',
+        phaseTagColor: st.status === 'overdue' ? 'oklch(98% 0.01 70)' : 'oklch(30% 0.06 30)',
+        phaseBorder: st.status === 'overdue' ? 'oklch(70% 0.1 30)'
+          : st.status === 'now' ? 'oklch(65% 0.09 40)' : 'oklch(90% 0.015 55)',
         tasks: p.tasks.map((t, ti) => ({
           text: t.text, done: t.done, showTag: t.critical && !t.done,
           textColor: t.done ? 'oklch(60% 0.02 40)' : 'oklch(32% 0.02 40)',
@@ -1017,6 +1272,8 @@ class Component extends DCLogic {
       profileB: d.profile.partnerB, onProfileBChange: (e) => this.update(dd => { dd.profile.partnerB = e.target.value; return dd; }),
       profileDate: d.profile.date, onProfileDateChange: (e) => this.update(dd => { dd.profile.date = e.target.value; return dd; }),
       profileVibe: d.profile.vibe, onProfileVibeChange: (e) => this.update(dd => { dd.profile.vibe = e.target.value; return dd; }),
+      profileCurrency: CURRENCY,
+      onProfileCurrencyChange: (e) => this.update(dd => { dd.profile.currency = curSym(e.target.value); return dd; }),
       detailsWarning: !hasDate || !tidyName(d.profile.partnerA) || !tidyName(d.profile.partnerB),
 
       hasOverBudget: overBudgetCats.length > 0 || unplannedCats.length > 0,
@@ -1043,8 +1300,9 @@ class Component extends DCLogic {
         this.setState({ copyLabel: 'Copied!' }); setTimeout(() => this.setState({ copyLabel: 'Copy link' }), 1800);
       },
       exportGuestsCsv: () => {
-        const rows = [['Name', 'Status', 'Meal', 'Plus One', 'Attending']].concat(
+        const rows = [['Name', 'Status', 'Meal', 'Plus One', 'Plus One Name', 'Attending']].concat(
           d.guests.map(g => [g.name, g.status, g.meal, g.plusOne ? 'Yes' : 'No',
+            g.plusOne ? (g.plusOneName || '') : '',
             g.status === 'Yes' ? (g.plusOne ? 2 : 1) : 0]));
         const csv = rows.map(r => r.map(csvCell).join(',')).join('\r\n');
         const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a');
@@ -1059,13 +1317,35 @@ class Component extends DCLogic {
         if (d.guests.some(g => normName(g.name) === normName(name))) {
           this.setState({ guestNotice: '“' + name + '” is already on the guest list.' }); return;
         }
-        this.update(dd => { dd.guests.push({ name, status: 'Pending', meal: '', plusOne: false }); return dd; });
+        this.update(dd => { dd.guests.push({ name, status: 'Pending', meal: '', plusOne: false, plusOneName: '' }); return dd; });
         this.setState({ newGuestName: '', guestNotice: '' });
       },
 
       phaseRows,
+      timelineDated: isIsoDate(d.profile.date),
+      timelineSummary: latePhases
+        ? latePhases + ' phase' + (latePhases > 1 ? 's' : '') + ' overdue'
+        : 'nothing overdue',
+      timelineSummaryBg: latePhases ? 'oklch(58% 0.15 28)' : 'oklch(90% 0.05 145)',
+      timelineSummaryColor: latePhases ? 'oklch(98% 0.01 70)' : 'oklch(30% 0.06 30)',
+      timelineFocus: livePhase
+        ? 'Working on ' + livePhase + ' right now.'
+        : 'Dates are worked back from ' + (isIsoDate(d.profile.date) ? fmtDate(d.profile.date) : 'your wedding day') + '.',
 
-      vendorRows, addVendor: () => this.update(dd => { dd.vendors.push({ name: 'New vendor', category: '', contact: '', status: 'Inquiring', deposit: '', final: '' }); return dd; }),
+      vendorRows, addVendor: () => this.update(dd => {
+        dd.vendors.push({ name: 'New vendor', category: '', contact: '', status: 'Inquiring', deposit: '', final: '',
+          cost: 0, depositAmount: 0, paidAmount: 0 });
+        return dd;
+      }),
+      hasVendors: d.vendors.length > 0,
+      vendorTotalCost: fmtMoney(vendorTotals.cost), vendorTotalPaid: fmtMoney(vendorTotals.paid),
+      vendorTotalOwed: fmtMoney(vendorTotals.balance),
+      vendorLateLine: vendorLate.length
+        ? 'Payment overdue for ' + listPhrase(vendorLate.map(v => tidyName(v.name) || 'an unnamed vendor')) + '.' : '',
+      hasVendorLate: vendorLate.length > 0,
+      vendorSoonLine: vendorSoon.length
+        ? 'Payment due within two weeks for ' + listPhrase(vendorSoon.map(v => tidyName(v.name) || 'an unnamed vendor')) + '.' : '',
+      hasVendorSoon: vendorLate.length === 0 && vendorSoon.length > 0,
 
       diaryRows,
       newEntryDate: s.newEntryDate, onNewEntryDateChange: (e) => this.setState({ newEntryDate: e.target.value }),

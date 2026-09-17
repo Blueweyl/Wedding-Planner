@@ -10,6 +10,8 @@ assistant), all saved locally in the visitor's browser — no backend required.
   look for `index.html` by default).
 - `Wedding Planner Landing.dc.html` — the marketing/landing page. Its
   "Start Planning" button links to the planner app.
+- `Wedding Planner.html` — a standalone single-file version of the planner
+  that opens straight from disk (no `support.js`, no CDN, no server).
 - `Our Wedding Planner.dc.html` — the planner app itself (Home, Budget,
   Guests, Timeline, Vendors, Diary, Vows tabs). On a first visit it asks for
   both names and a wedding date before it opens (or you can load the example
@@ -22,6 +24,26 @@ assistant), all saved locally in the visitor's browser — no backend required.
   `<x-dc>` template, evaluates `{{ }}` bindings, and drives the `DCLogic`
   component defined in each page's `<script data-dc-script>` block).
 - `assets/thumbnail.webp` — a preview image of the design.
+
+## Money, dates and guests
+
+- **Currency** is a setting, not a hard-coded `$`. Pick a symbol under
+  *Settings* (standalone) or *Our Details* (component version); every figure
+  on screen follows it, and the numbers themselves never change.
+- **Timeline** phases are named relative to the day ("6 Months Out"), so the
+  wedding date turns them into real deadlines: each phase shows the date it
+  should be finished by and reads as *complete*, *do this now* or *overdue*.
+  Month arithmetic clamps to shorter months (31 May minus 3 months is 28 Feb).
+- **Vendors** track a total cost, a deposit amount and how much has been paid,
+  and show the balance per vendor plus totals for the whole list. A deposit or
+  final payment counts as settled either from the booking status or from the
+  money recorded, whichever says "paid" first. "Still owed" adds up only what
+  is genuinely outstanding per vendor.
+- **Guests** carry the plus-one's name, and a declined RSVP clears and locks
+  the meal and plus-one fields — a "no" can never inflate the headcount.
+
+Backups written by an earlier version still restore: the new fields are
+optional and default sensibly ($, zero amounts, no plus-one name).
 
 ## How it works
 
