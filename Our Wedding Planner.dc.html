@@ -226,6 +226,9 @@
               </select>
             </label>
           </div>
+          <sc-if value="{{ hasDetailsError }}" hint-placeholder-val="{{ false }}">
+            <div id="details-error" role="alert" class="longtext" style="background:oklch(90% 0.05 70);border-radius:6px;padding:11px 16px;margin-top:12px;font-size:12.5px;color:oklch(32% 0.05 40);">{{ detailsError }}</div>
+          </sc-if>
           <sc-if value="{{ detailsWarning }}" hint-placeholder-val="{{ false }}">
             <div role="alert" style="font-size:12.5px;color:oklch(45% 0.1 30);margin-top:12px;">Both names and a wedding date keep your countdown and RSVP link working.</div>
           </sc-if>
@@ -646,6 +649,23 @@ function listPhrase(items) {
 }
 function clone(v) { return JSON.parse(JSON.stringify(v)); }
 
+/* The three details the planner depends on. An edit that breaks one of them
+   is never written: the last valid values stay saved. */
+function detailsProblem(p) {
+  const missing = [];
+  if (!tidyName(p.partnerA)) missing.push('your name');
+  if (!tidyName(p.partnerB)) missing.push("your partner's name");
+  if (!isIsoDate(p.date)) missing.push('a wedding date');
+  if (missing.length) {
+    return 'Not saved \u2014 add ' + listPhrase(missing) + '. Your last saved details are still in place.';
+  }
+  if (daysUntil(p.date) < 0) {
+    return 'Not saved \u2014 that date has already passed. Pick today or a day still to come. '
+      + 'Your last saved date is still in place.';
+  }
+  return '';
+}
+
 /** A deposit counts as paid once the vendor is past 'Inquiring'; the final
  *  payment only counts as paid at 'Paid in Full'. */
 function paymentFlag(iso, paid) {
@@ -898,6 +918,7 @@ class Component extends DCLogic {
   state = { data: defaultData(), activeTab: 'home', showCompile: false, copyLabel: 'Copy link', newGuestName: '',
     newEntryDate: todayIso(), newEntryMood: 'Joyful', newEntryText: '',
     saveFailed: false, loadFailed: false, needsSetup: false, undo: null, guestNotice: '', setupError: '',
+    detailsDraft: null, detailsError: '',
     setup: { partnerA: '', partnerB: '', date: '', vibe: '', budgetTotal: '' } };
 
   componentDidMount() {
@@ -996,7 +1017,8 @@ class Component extends DCLogic {
       ['vendors', 'Vendors'], ['diary', 'Diary'], ['vows', 'Vows'],
     ];
     const tabs = tabDefs.map(([key, label]) => ({
-      label, key, onClick: () => this.setState({ activeTab: key, undo: null, guestNotice: '' }),
+      label, key, onClick: () => this.setState({ activeTab: key, undo: null, guestNotice: '',
+        detailsDraft: null, detailsError: '' }),
       current: s.activeTab === key ? 'page' : undefined,
       bg: s.activeTab === key ? 'oklch(30% 0.06 30)' : 'transparent',
       color: s.activeTab === key ? 'oklch(98% 0.01 70)' : 'oklch(40% 0.02 40)',
@@ -1184,6 +1206,22 @@ class Component extends DCLogic {
 
     const setSetup = (k, v) => this.setState(st => ({ setup: Object.assign({}, st.setup, { [k]: v }), setupError: '' }));
 
+    /* Names and the wedding date are only written once all three are good. */
+    const setDetail = (k, v) => {
+      const cur = s.detailsDraft
+        || { partnerA: d.profile.partnerA, partnerB: d.profile.partnerB, date: d.profile.date };
+      const next = Object.assign({}, cur, { [k]: v });
+      const problem = detailsProblem(next);
+      if (problem) { this.setState({ detailsDraft: next, detailsError: problem }); return; }
+      this.setState({ detailsDraft: null, detailsError: '' });
+      this.update(dd => {
+        dd.profile.partnerA = tidyName(next.partnerA);
+        dd.profile.partnerB = tidyName(next.partnerB);
+        dd.profile.date = next.date;
+        return dd;
+      });
+    };
+
     return {
       showApp: !s.showCompile && !s.needsSetup, showCompile: s.showCompile, showSetup: s.needsSetup && !s.showCompile,
       coupleTitle: (tidyName(d.profile.partnerA) || 'Partner one') + ' & ' + (tidyName(d.profile.partnerB) || 'Partner two'),
@@ -1250,7 +1288,8 @@ class Component extends DCLogic {
             return;
           }
           if (!window.confirm('Restore this backup? It replaces everything in the planner right now.')) return;
-          this.setState({ data: clean, needsSetup: false, loadFailed: false, undo: null, saveFailed: !this.save(clean) });
+          this.setState({ data: clean, needsSetup: false, loadFailed: false, undo: null,
+            detailsDraft: null, detailsError: '', saveFailed: !this.save(clean) });
         };
         reader.readAsText(file);
       },
@@ -1268,9 +1307,15 @@ class Component extends DCLogic {
       onStoryChange: (e) => this.update(dd => { dd.profile.story = e.target.value; return dd; }),
 
       // --- our details (editable after setup) ---
-      profileA: d.profile.partnerA, onProfileAChange: (e) => this.update(dd => { dd.profile.partnerA = e.target.value; return dd; }),
-      profileB: d.profile.partnerB, onProfileBChange: (e) => this.update(dd => { dd.profile.partnerB = e.target.value; return dd; }),
-      profileDate: d.profile.date, onProfileDateChange: (e) => this.update(dd => { dd.profile.date = e.target.value; return dd; }),
+      // While an edit is being corrected the fields show what was typed; the
+      // saved plan keeps its last valid names and date.
+      profileA: s.detailsDraft ? s.detailsDraft.partnerA : d.profile.partnerA,
+      onProfileAChange: (e) => setDetail('partnerA', e.target.value),
+      profileB: s.detailsDraft ? s.detailsDraft.partnerB : d.profile.partnerB,
+      onProfileBChange: (e) => setDetail('partnerB', e.target.value),
+      profileDate: s.detailsDraft ? s.detailsDraft.date : d.profile.date,
+      onProfileDateChange: (e) => setDetail('date', e.target.value),
+      detailsError: s.detailsError, hasDetailsError: !!s.detailsError,
       profileVibe: d.profile.vibe, onProfileVibeChange: (e) => this.update(dd => { dd.profile.vibe = e.target.value; return dd; }),
       profileCurrency: CURRENCY,
       onProfileCurrencyChange: (e) => this.update(dd => { dd.profile.currency = curSym(e.target.value); return dd; }),

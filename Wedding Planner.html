@@ -312,6 +312,8 @@
   var notice = '';            // inline message on the Guests tab
   var setupError = '';        // inline message on the setup screen
   var setupDraft = null;      // what was typed, kept across a failed attempt
+  var settingsDraft = null;   // Settings edits not yet good enough to save
+  var settingsError = '';     // why the last Settings edit was not saved
 
   var data = load();
   var tab = 'home';
@@ -506,6 +508,24 @@
     var s = v == null ? '' : String(v);
     if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
     return '"' + s.replace(/"/g, '""') + '"';
+  }
+
+  /* The three details the planner depends on. An edit that breaks one of
+     them is never written: the last valid values stay saved. */
+  function settingsProblems(p) {
+    var missing = [];
+    if (!tidy(p.partnerA)) missing.push('your name');
+    if (!tidy(p.partnerB)) missing.push("your partner's name");
+    if (!isIsoDate(p.date)) missing.push('a wedding date');
+    if (missing.length) {
+      return 'Not saved \u2014 add ' + listPhrase(missing) +
+        '. Your last saved details are still in place.';
+    }
+    if (daysUntil(p.date) < 0) {
+      return 'Not saved \u2014 that date has already passed. Pick today or a day still to come. ' +
+        'Your last saved date is still in place.';
+    }
+    return '';
   }
 
   function listPhrase(items) {
@@ -757,6 +777,15 @@
         '<button class="btn" onclick="APP.dismissLoadWarning()">Dismiss</button></div>';
     }
     warnBox.innerHTML = html;
+  }
+
+  /* Shown and hidden in place: re-rendering the tab mid-word would move
+     the caret out from under the couple. */
+  function updateSettingsError() {
+    var el = document.getElementById('settings-error');
+    if (!el) return;
+    el.textContent = settingsError;
+    el.style.display = settingsError ? '' : 'none';
   }
 
   function undoBar() {
@@ -1314,22 +1343,28 @@
   /* ---------------- settings ---------------- */
 
   function settingsView() {
-    var p = data.profile;
+    // While an edit is being corrected, the fields show what was typed.
+    var p = settingsDraft
+      ? { partnerA: settingsDraft.partnerA, partnerB: settingsDraft.partnerB, date: settingsDraft.date,
+          vibe: data.profile.vibe, currency: data.profile.currency }
+      : data.profile;
     return '' +
       '<div style="max-width:560px;">' +
         '<div class="card" style="margin-bottom:20px;">' +
           '<div class="serif" style="font-size:21px;font-weight:600;margin-bottom:16px;">Your details</div>' +
           '<div class="field"><label for="set-a">Your name</label>' +
-          '<input id="set-a" value="' + esc(p.partnerA) + '" oninput="APP.profile(\'partnerA\',this.value)"></div>' +
+          '<input id="set-a" value="' + esc(p.partnerA) + '" oninput="APP.profileGuarded(\'partnerA\',this.value)"></div>' +
           '<div class="field"><label for="set-b">Partner\'s name</label>' +
-          '<input id="set-b" value="' + esc(p.partnerB) + '" oninput="APP.profile(\'partnerB\',this.value)"></div>' +
+          '<input id="set-b" value="' + esc(p.partnerB) + '" oninput="APP.profileGuarded(\'partnerB\',this.value)"></div>' +
           '<div class="field"><label for="set-date">Wedding date</label>' +
-          '<input id="set-date" type="date" value="' + esc(p.date) + '" onchange="APP.profile(\'date\',this.value,true)"></div>' +
+          '<input id="set-date" type="date" value="' + esc(p.date) + '" onchange="APP.profileGuarded(\'date\',this.value)"></div>' +
           '<div class="field"><label for="set-vibe">The vibe</label>' +
           '<input id="set-vibe" value="' + esc(p.vibe) + '" oninput="APP.profile(\'vibe\',this.value)"></div>' +
           '<div class="field" style="margin-bottom:0;"><label for="set-currency">Currency</label>' +
           '<select id="set-currency" onchange="APP.profile(\'currency\',this.value,true)">' + currencyOptions() + '</select>' +
           '<div class="muted" style="margin-top:6px;">Used everywhere money is shown. It changes the symbol only \u2014 your figures stay as typed.</div></div>' +
+          '<div class="notice longtext" id="settings-error" role="alert" style="margin-top:14px;' +
+          (settingsError ? '' : 'display:none;') + '">' + esc(settingsError) + '</div>' +
           ((!tidy(p.partnerA) || !tidy(p.partnerB) || !isIsoDate(p.date))
             ? '<div class="notice" role="alert" style="margin-top:14px;">Both names and a wedding date keep your countdown and keepsake headings working.</div>'
             : '') +
@@ -1411,7 +1446,13 @@
   }
 
   var APP = {
-    go: function (t) { tab = t; notice = ''; undoable = null; window.scrollTo(0, 0); render(); },
+    go: function (t) {
+      tab = t; notice = ''; undoable = null;
+      // An edit that never validated is discarded, not carried around.
+      settingsDraft = null; settingsError = '';
+      window.scrollTo(0, 0);
+      render();
+    },
 
     finishSetup: function () {
       var a = tidy(document.getElementById('su-a').value);
@@ -1460,6 +1501,24 @@
     dismissUndo: function () { undoable = null; render(); },
 
     profile: function (k, v, re) { data.profile[k] = v; re ? loud() : quiet(); },
+
+    /* Names and the wedding date are only written once all three are good.
+       Until then the typing stays on screen and nothing is saved. */
+    profileGuarded: function (k, v) {
+      var d = settingsDraft || { partnerA: data.profile.partnerA, partnerB: data.profile.partnerB, date: data.profile.date };
+      d[k] = v;
+      settingsDraft = d;
+      settingsError = settingsProblems(d);
+      if (settingsError) { updateSettingsError(); return; }
+
+      data.profile.partnerA = tidy(d.partnerA);
+      data.profile.partnerB = tidy(d.partnerB);
+      data.profile.date = d.date;
+      settingsDraft = null;
+      // A new date changes the countdown and the timeline, so redraw for it;
+      // a name is left to the next render so the caret stays put.
+      if (k === 'date') { loud(); } else { quiet(); updateSettingsError(); }
+    },
     setStory: function (v) { data.profile.story = v; quiet(); },
 
     budgetField: function (i, k, v) { data.budget[i][k] = v; quiet(); },
@@ -1597,6 +1656,8 @@
         loadFailed = false;
         undoable = null;
         notice = '';
+        settingsDraft = null;
+        settingsError = '';
         tab = 'home';
         loud();
       };
@@ -1622,6 +1683,8 @@
       loadFailed = false;
       setupError = '';
       setupDraft = null;
+      settingsDraft = null;
+      settingsError = '';
       loud();
     }
   };
