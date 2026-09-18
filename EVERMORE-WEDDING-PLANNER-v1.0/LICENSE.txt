@@ -58,7 +58,7 @@ license.
 
 COPYRIGHT
 
-Copyright (c) 2026. All rights reserved.
+Copyright (c) 2026 readymadetoolkits. All rights reserved.
 
 The Cormorant Garamond and Inter typefaces are not included in this
 download. If your computer is online, the planner loads them from Google
