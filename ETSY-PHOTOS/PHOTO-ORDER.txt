@@ -100,3 +100,23 @@ Photos 1, 2 and 9 show the planner on a phone. Those are real renders at
 phone size, and the phone route needs your hosted link working:
 evermore-planner-k4m9x2.netlify.app — open it on your own phone before you
 publish, so the photos are a promise you have personally checked.
+
+
+THE PHOTO SLOT
+
+Photos 1 and 10 have a place for a real photograph. Put one image in
+ETSY-PHOTOS-SRC/ and re-render: the cover swaps its drawn rings for a
+full-width band behind the title, with a graduated cream scrim so the
+headline stays readable, and photo 10 gains a small tilted print. With the
+folder empty, the drawn rings and linen stand in — which is what these
+current files show.
+
+Four engagement-style options were generated for this (couple walking at
+sunset, clasped hands with the ring, a golden-hour silhouette, a couple
+planning at a table). They live in the shop's Higgsfield generations; the
+session that made them could not download them, because its network policy
+blocks the host serving them.
+
+Option 4, the couple planning at a table, sells this product better than the
+other three: it shows a couple planning, which is what the planner is for,
+rather than a wedding day the planner does not provide.
