@@ -1,0 +1,64 @@
+LISTING PHOTOS — upload in this order
+readymadetoolkits · Evermore Wedding Planner v1.0
+
+All ten are 2000 x 2000 px, made from the real planner with a realistic
+wedding in it. Etsy shows photo 1 as your thumbnail in search results, so
+that one does most of the work.
+
+Paste the alt text into Etsy's "Add alt text" box on each photo. It is a
+genuine ranking signal and almost no seller fills it in.
+
+
+01-hero.png        THUMBNAIL. "Your whole wedding. One file."
+   alt: Digital wedding planner open in a browser showing a countdown,
+        planning health and milestones
+
+02-budget.png      The budget tab with a real wedding budget
+   alt: Wedding budget tracker showing planned and spent amounts by category
+        with the remaining total
+
+03-guests.png      Guest list with RSVPs, meals and plus-ones
+   alt: Wedding guest list tracker with RSVP status, meal choice, plus-one
+        names and a running headcount
+
+04-vendors.png     Vendor payments, balances, an overdue warning
+   alt: Wedding vendor payment tracker showing total cost, deposit, balance
+        and an overdue final payment
+
+05-timeline.png    The date-driven timeline
+   alt: Wedding planning timeline with phases dated from the wedding day,
+        showing overdue and current tasks
+
+06-phone.png       Two phones, guest list and home
+   alt: Wedding planner used on a phone home screen, showing the guest list
+        and countdown
+
+07-included.png    What you get: three files
+   alt: What is included in the download: the planner, a start here guide
+        and a personal use license
+
+08-how.png         How it works in three steps
+   alt: Three steps to use the planner: download and unzip, double-click,
+        enter your names and date
+
+09-why.png         Why not a spreadsheet
+   alt: Four reasons to use this instead of a spreadsheet: no formulas, no
+        Google account, built for the job, yours forever
+
+10-guide.png       The included guide
+   alt: The included start here guide, thirteen plain English sections
+
+
+VIDEO (optional, but it earns clicks)
+
+Five to fifteen seconds, filmed on your own screen: open the Guests tab,
+type a name, add it, and let the headcount tick up. Movement in a grid of
+still images is what makes a thumb stop.
+
+
+ONE HONEST NOTE
+
+Photo 6 shows the planner on a phone. That is a real render at phone size,
+not a photograph of a handset, and the phone version needs the link you
+host. Test the link on your own phone before you publish, so the photo is
+a promise you have personally checked.
