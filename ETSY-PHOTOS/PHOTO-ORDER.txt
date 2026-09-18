@@ -1,0 +1,102 @@
+LISTING PHOTOS — upload in this order
+readymadetoolkits · Evermore Wedding Planner v1.0
+
+Ten separate images, 2000 x 2000 px, JPEG. Rendered from the real planner with
+a realistic wedding in it. Etsy uses photo 1 as your search thumbnail, so that
+one does most of the work.
+
+Paste the alt text into Etsy's "Add alt text" box on each photo. It is a
+genuine ranking signal and almost no seller fills it in.
+
+
+01-cover.jpg          THUMBNAIL — gold rings, display title, laptop and phone
+   alt: Evermore digital wedding planner on a laptop and phone, one HTML file
+        that works offline in any browser
+
+02-what-you-get.jpg   The eight sections, with the budget on screen
+   alt: What is included: eight planner sections, a start here guide, CSV
+        export, fifteen currencies and a printable keepsake
+
+03-dashboard.jpg      Countdown, planning health, milestones — annotated
+   alt: Wedding planner dashboard with a countdown, planning health score and
+        milestone checklist
+
+04-budget.jpg         The budget, with a real over-plan warning — annotated
+   alt: Wedding budget tracker showing planned, spent and remaining amounts and
+        a warning that one category is over plan
+
+05-guests.jpg         RSVPs, meals, plus-one names — annotated
+   alt: Wedding guest list with RSVP status, meal choices, plus-one names and a
+        running headcount
+
+06-timeline.jpg       Phases dated from the wedding day — annotated
+   alt: Wedding timeline with phases dated from the wedding day, showing
+        overdue phases and the current one
+
+07-vendors.jpg        Payments, balances, an overdue alert — annotated
+   alt: Wedding vendor payment tracker showing total cost, deposit, balance and
+        an overdue final payment
+
+08-vows.jpg           The vow writer, prompts and spoken length — annotated
+   alt: Wedding vow writer with four prompts, a tone guide and a spoken length
+        estimate
+
+09-devices.jpg        Laptop and two phones, offline and private
+   alt: The wedding planner on a laptop and a phone home screen, working
+        offline with the plan kept on the device
+
+10-how-it-works.jpg   Three steps, and where to ask questions
+   alt: Three steps to use the planner: download and unzip, double-click to
+        open, add your names and date
+
+
+ABOUT THE BACKGROUND
+
+The linen weave, the gold rings and the eucalyptus are drawn in code, not
+photographed. No stock licence to buy, no photographer to credit, no
+AI-image question on the listing, and the tone matches the planner's own
+palette exactly.
+
+If you would rather have a real photograph behind the title — rings on linen,
+florals, a couple — send me the image in chat and I will place it properly:
+darkened where the text sits, blurred, cropped to 2000 x 2000. Use your own
+photo, or a free-licence one from Unsplash or Pexels (both allow commercial
+use, and Etsy listing images count as commercial).
+
+A photo of a real couple must be one you have permission to use
+commercially. A stranger's wedding photo in your listing is a problem even
+when it is beautiful.
+
+JPEG rather than PNG, because the woven texture pushes a PNG to about 3.7 MB
+an image and a JPEG holds the same picture in about 400 KB.
+
+
+WHAT WAS TAKEN FROM THE COMPETITOR LISTINGS, AND WHAT WAS NOT
+
+Taken, because it is craft rather than property: the display serif title, the
+warm neutral ground, layered laptop-and-phone mockups, callout labels on
+leader lines, badge pills.
+
+Not taken, because none of it is true here: "Bestseller" (that badge is Etsy's
+to award, not a listing image's to claim), customer and review counts, Excel
+and Google Sheets, 21 tabs, a YouTube tutorial, printable page packs, a
+seating plan, a photo gallery.
+
+Every feature named in these ten images is one the planner has. The over-plan
+warning in photo 4 and the overdue payment in photo 7 are the real thing,
+captured on screen rather than drawn on.
+
+
+VIDEO (optional, but it earns clicks)
+
+Five to fifteen seconds of your own screen: open the Guests tab, type a name,
+add it, and let the headcount tick up. Movement in a grid of stills is what
+makes a thumb stop.
+
+
+ONE THING TO CHECK FIRST
+
+Photos 1, 2 and 9 show the planner on a phone. Those are real renders at
+phone size, and the phone route needs your hosted link working:
+evermore-planner-k4m9x2.netlify.app — open it on your own phone before you
+publish, so the photos are a promise you have personally checked.
