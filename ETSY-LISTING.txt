@@ -1,0 +1,231 @@
+EVERMORE WEDDING PLANNER — ETSY LISTING COPY
+Shop: readymadetoolkits
+Seller notes only. Do NOT include this file in the buyer download.
+================================================================
+
+
+------------------------------------------------------------
+1. TITLE  (Etsy allows 140 characters)
+------------------------------------------------------------
+
+USE THIS ONE (131 characters):
+
+Digital Wedding Planner | Budget Tracker, Guest List, Vendor Payments, Timeline | Works Offline, No Subscription | Instant Download
+
+
+Backups, if you want to test another angle:
+
+B (132) Wedding Planner Digital Download, Wedding Budget Tracker, Guest List and RSVP Tracker, Vendor and Timeline Planner, Instant Download
+C (133) All in One Digital Wedding Planner, Budget Tracker, Guest List, RSVP and Vendor Tracker, Wedding Checklist Timeline, Instant Download
+
+Why this shape: the first 3-4 words carry the most weight in Etsy search, so
+"Digital Wedding Planner" leads. After that come the four things people
+actually type when they are further along -- budget, guest list, vendors,
+timeline. "Works Offline" and "No Subscription" are not search terms; they are
+there for the human reading the results page, because every competing listing
+is a Canva or Notion template and yours is not.
+
+
+------------------------------------------------------------
+2. TAGS  (13 tags, 20 characters each maximum)
+------------------------------------------------------------
+
+wedding planner
+digital wedding plan
+wedding budget
+guest list tracker
+wedding checklist
+vendor tracker
+wedding timeline
+rsvp tracker
+wedding organizer
+wedding spreadsheet
+engagement gift
+bride to be gift
+wedding planning app
+
+Use all 13. An empty tag slot is a search you cannot appear in.
+
+Swap ideas once you see your own stats (Shop Manager > Marketing > Search
+analytics): "budget tracker", "wedding binder", "bridal shower gift",
+"wedding planner book", "fiance gift", "wedding countdown".
+
+
+------------------------------------------------------------
+3. DESCRIPTION
+------------------------------------------------------------
+
+Plan your whole wedding in one file. Budget, guest list, vendors and timeline
+in a single planner that opens in your browser, works with no internet, and
+never asks for a subscription or a login.
+
+
+WHAT YOU GET
+
+One HTML file that opens in any browser on your computer. Double-click it and
+you are planning. Nothing to install, no account, no monthly fee, and your
+plan never leaves your own computer.
+
+- Budget tracker. Set your total, add what you are spending on, and see what
+  is left as you go. Fifteen currencies included.
+- Guest list. Names, RSVP, meal choice, plus-ones and plus-one names, with a
+  running headcount. Export to CSV any time for your caterer or venue.
+- Vendor payments. Total cost, deposit, paid so far and the balance for every
+  vendor, with due dates and clear overdue warnings.
+- Timeline. Your wedding date drives everything, so the planner shows you what
+  is due now, what is coming and what has slipped.
+- Countdown, notes and vows, plus a printable keepsake page.
+
+
+HOW IT WORKS
+
+1. Download the zip and unzip it.
+2. Open Evermore-Wedding-Planner.html -- it opens in your browser.
+3. Put in your names and your date. Start planning.
+
+Your plan saves automatically as you type, right there in your browser. Close
+it, come back tomorrow, it is all still there. A one-click backup file lets you
+move your plan to another computer or keep a copy somewhere safe.
+
+
+WHY NOT A SPREADSHEET
+
+No formulas to break. No columns to widen. No Google account. No one else can
+see your budget. It is built for the job, so the maths is already done -- your
+balance, your headcount and your overdue payments update themselves.
+
+
+WHAT IS INCLUDED IN YOUR DOWNLOAD
+
+- Evermore-Wedding-Planner.html -- the planner
+- START-HERE.html -- a plain-English guide, no jargon
+- LICENSE.txt -- personal use terms
+
+Instant download. The files are yours the moment payment clears.
+
+
+PLEASE READ BEFORE BUYING
+
+- This is a browser-based planner, not a Canva, Notion, Google Sheets or Excel
+  template, and not a printable PDF planner.
+- Designed for a laptop or desktop computer. Chrome, Edge, Firefox, Safari and
+  Brave all work.
+- Your plan is stored by your own browser on your own computer. It is private,
+  and it is also yours to look after -- save a backup file, which takes one
+  click and is explained in the guide.
+- Clearing your browser data can erase the plan, exactly like clearing it
+  erases a saved website login. The guide covers this on page one.
+- Colours, fonts and layout are fixed. This is a working planner, not an
+  editable design template.
+- Digital files, so no refunds once downloaded. Message me if anything does not
+  work and I will sort it out.
+
+
+QUESTIONS
+
+Do I need internet? Only to download it. After that it works with no
+connection at all.
+
+Do I need to install anything? No. It opens in the browser you already have.
+
+Can my partner use it too? Yes -- send them the file, or your backup file, and
+they have their own copy.
+
+Is my information private? Completely. Nothing is uploaded anywhere. There is
+no account and no server.
+
+Can I print it? Yes. Print or save as PDF from your browser.
+
+
+Thank you for supporting a small shop. If this planner takes one thing off
+your mind, tell me -- and if something is not right, message me first and give
+me the chance to fix it.
+
+------------------------------------------------------------
+4. THE FIRST 160 CHARACTERS MATTER
+------------------------------------------------------------
+
+Google shows roughly the first 160 characters of your description as the
+search snippet, and Etsy leans on the opening line too. The paragraph above is
+written to survive being cut off mid-sentence. Do not open with "Welcome to my
+shop" -- it wastes the only line most people will read.
+
+
+------------------------------------------------------------
+5. EVERY FIELD ETSY WILL ASK YOU FOR
+------------------------------------------------------------
+
+Listing type            Digital
+Category                Weddings > Gifts & Mementos > Planners
+                        (or Paper & Party Supplies > Paper > Planners)
+Primary colour          Cream / Beige
+Who made it             I did
+What is it              A finished product
+When was it made        Made to order (or 2020-2026)
+Renewal                 Automatic
+Quantity                999
+Price                   See section 7
+Shipping                None -- digital listings have no shipping
+Personalisation         Off
+Variations              None
+Returns                 Digital items: no returns. Say so kindly in the
+                        description, as written above.
+Files to upload         EVERMORE-WEDDING-PLANNER-v1.0.zip  (34 KB)
+Materials               HTML file, digital download, instant download
+Shop section            Wedding Planning  (make it if you do not have it)
+
+
+------------------------------------------------------------
+6. PHOTOS AND VIDEO  (this decides your click rate)
+------------------------------------------------------------
+
+Etsy allows 10 photos. Use all 10. Square, 2000 x 2000 px, bright.
+
+1  The planner on a laptop screen, whole page visible. THIS IS YOUR THUMBNAIL.
+   Keep text on it under about six words -- it gets shown tiny.
+2  Budget tab, filled with a realistic wedding budget.
+3  Guest list tab with RSVPs and a headcount.
+4  Vendor payments tab showing a balance and an overdue warning.
+5  Timeline tab with the countdown visible.
+6  "What you get" -- the three files laid out with labels.
+7  "How it works" -- 3 steps: download, open, plan.
+8  Why it beats a spreadsheet -- short, honest, 4 bullet points.
+9  A screenshot of the START-HERE guide, so buyers see they are looked after.
+10 The keepsake or print view.
+
+Video: 5 to 15 seconds. Screen-record yourself typing a guest name and
+watching the headcount change. Movement in a still grid earns the click.
+
+Fill in the alt text on every photo. Describe what is in it in plain words.
+It is a real ranking signal and almost nobody bothers.
+
+
+------------------------------------------------------------
+7. PRICING
+------------------------------------------------------------
+
+Launch at 9.99 USD for your first 10 sales, then hold at 14.99.
+
+Under 5 reads as throwaway. Over 20 invites comparison with planners that come
+with 60 printable pages. The first 10 sales are worth more than the margin:
+reviews are what move you up the results page.
+
+Run a 20 percent sale for the first two weeks. Etsy shows the strikethrough,
+and the badge earns the click on its own.
+
+
+------------------------------------------------------------
+8. WHAT ACTUALLY MOVES YOU UP
+------------------------------------------------------------
+
+- Reviews. More than anything else. Follow up politely after each sale.
+- Click rate. Photo 1 does this job alone.
+- Staying. New listings get a short visibility boost. Do not delete and
+  relist -- edit in place and let it settle.
+- Finishing the sale. A listing people open and leave sinks. That is what the
+  "please read before buying" section protects you from: the wrong buyer
+  never buys, so they never leave a two-star review saying it was not Canva.
+
+Check Shop Manager > Marketing > Search analytics after two weeks. It shows
+the exact phrases people typed to find you. Put the winners in your title and
+tags, and drop whatever brought nobody.
