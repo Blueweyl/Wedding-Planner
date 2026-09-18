@@ -1,65 +1,69 @@
 LISTING PHOTOS — upload in this order
 readymadetoolkits · Evermore Wedding Planner v1.0
 
-Ten separate images, 2000 x 2000 px each, all rendered from the real planner
-with a realistic wedding in it. Etsy uses photo 1 as your search thumbnail,
-so that one does most of the work.
+Ten separate images, 2000 x 2000 px each, rendered from the real planner with
+a realistic wedding in it. Etsy uses photo 1 as your search thumbnail, so that
+one does most of the work.
 
 Paste the alt text into Etsy's "Add alt text" box on each photo. It is a
 genuine ranking signal and almost no seller fills it in.
 
 
-01-cover.png          THUMBNAIL — the name, four icons, the planner on a laptop
-   alt: Evermore digital wedding planner shown on a laptop, one HTML file that
-        opens in any browser
+01-cover.png          THUMBNAIL — display title, laptop and phone, two badges
+   alt: Evermore digital wedding planner on a laptop and phone, one HTML file
+        that works offline in any browser
 
-02-what-you-get.png   The eight sections and everything else included
+02-what-you-get.png   The eight sections, with the budget on screen
    alt: What is included: eight planner sections, a start here guide, CSV
-        export, fifteen currencies and a personal use license
+        export, fifteen currencies and a printable keepsake
 
-03-dashboard.png      Countdown, planning health, milestones
+03-dashboard.png      Countdown, planning health, milestones — annotated
    alt: Wedding planner dashboard with a countdown, planning health score and
         milestone checklist
 
-04-budget.png         The budget, filled in
-   alt: Wedding budget tracker showing planned and spent amounts by category
-        with the remaining total
+04-budget.png         The budget, with a real over-plan warning — annotated
+   alt: Wedding budget tracker showing planned, spent and remaining amounts and
+        a warning that one category is over plan
 
-05-guests.png         Guest list with RSVPs, meals, plus-ones
+05-guests.png         RSVPs, meals, plus-one names — annotated
    alt: Wedding guest list with RSVP status, meal choices, plus-one names and a
         running headcount
 
-06-timeline.png       Phases dated from the wedding day
+06-timeline.png       Phases dated from the wedding day — annotated
    alt: Wedding timeline with phases dated from the wedding day, showing
-        overdue phases and current tasks
+        overdue phases and the current one
 
-07-vendors.png        Vendor payments and an overdue alert
+07-vendors.png        Payments, balances, an overdue alert — annotated
    alt: Wedding vendor payment tracker showing total cost, deposit, balance and
         an overdue final payment
 
-08-vows.png           The vow writer with prompts and word count
+08-vows.png           The vow writer, prompts and spoken length — annotated
    alt: Wedding vow writer with four prompts, a tone guide and a spoken length
         estimate
 
-09-devices.png        Two phones plus the private-and-offline promises
-   alt: The wedding planner on a phone home screen, working offline with the
-        plan kept on the device
+09-devices.png        Laptop and two phones, offline and private
+   alt: The wedding planner on a laptop and a phone home screen, working
+        offline with the plan kept on the device
 
-10-how-it-works.png   Three steps and what comes with it
+10-how-it-works.png   Three steps, and where to ask questions
    alt: Three steps to use the planner: download and unzip, double-click to
         open, add your names and date
 
 
-WHAT THESE IMAGES CLAIM, AND WHY
+WHAT WAS TAKEN FROM THE COMPETITOR LISTINGS, AND WHAT WAS NOT
 
-Every line is something the planner does. There are deliberately no
-testimonials, because you have no buyers yet and invented reviews are both
-against Etsy's rules and the fastest way to lose a shop. Add a real review
-panel once you have real reviews — it will outperform any made-up one.
+Taken, because it is craft rather than property: the display serif title, the
+warm neutral ground, layered laptop-and-phone mockups, callout labels on
+leader lines, and badge pills.
 
-There is also no mention of Excel or Google Sheets, printable page packs, a
-video tutorial, a seating plan or a photo gallery. Those belong to a different
-product. If you want any of them, they are a build, not a caption.
+Not taken, because none of it is true here: "Bestseller" (that badge is Etsy's
+to award, not a listing image's to claim), customer and review counts, Excel
+and Google Sheets, 21 tabs, a YouTube tutorial, printable page packs, a
+seating plan, a photo gallery.
+
+Every feature named in these ten images is one the planner has. The over-plan
+warning in photo 4 and the overdue payment in photo 7 are the real thing,
+captured on screen rather than drawn on.
 
 
 VIDEO (optional, but it earns clicks)
@@ -71,7 +75,7 @@ makes a thumb stop.
 
 ONE THING TO CHECK FIRST
 
-Photo 9 shows the planner on a phone. That is a real render at phone size, and
-the phone route needs your hosted link working:
+Photos 1, 2 and 9 show the planner on a phone. Those are real renders at phone
+size, and the phone route needs your hosted link working:
 evermore-planner-k4m9x2.netlify.app — open it on your own phone before you
-publish, so the photo is a promise you have personally checked.
+publish, so the photos are a promise you have personally checked.
