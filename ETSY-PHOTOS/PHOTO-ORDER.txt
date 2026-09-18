@@ -1,64 +1,77 @@
 LISTING PHOTOS — upload in this order
 readymadetoolkits · Evermore Wedding Planner v1.0
 
-All ten are 2000 x 2000 px, made from the real planner with a realistic
-wedding in it. Etsy shows photo 1 as your thumbnail in search results, so
-that one does most of the work.
+Ten separate images, 2000 x 2000 px each, all rendered from the real planner
+with a realistic wedding in it. Etsy uses photo 1 as your search thumbnail,
+so that one does most of the work.
 
 Paste the alt text into Etsy's "Add alt text" box on each photo. It is a
 genuine ranking signal and almost no seller fills it in.
 
 
-01-hero.png        THUMBNAIL. "Your whole wedding. One file."
-   alt: Digital wedding planner open in a browser showing a countdown,
-        planning health and milestones
+01-cover.png          THUMBNAIL — the name, four icons, the planner on a laptop
+   alt: Evermore digital wedding planner shown on a laptop, one HTML file that
+        opens in any browser
 
-02-budget.png      The budget tab with a real wedding budget
+02-what-you-get.png   The eight sections and everything else included
+   alt: What is included: eight planner sections, a start here guide, CSV
+        export, fifteen currencies and a personal use license
+
+03-dashboard.png      Countdown, planning health, milestones
+   alt: Wedding planner dashboard with a countdown, planning health score and
+        milestone checklist
+
+04-budget.png         The budget, filled in
    alt: Wedding budget tracker showing planned and spent amounts by category
         with the remaining total
 
-03-guests.png      Guest list with RSVPs, meals and plus-ones
-   alt: Wedding guest list tracker with RSVP status, meal choice, plus-one
-        names and a running headcount
+05-guests.png         Guest list with RSVPs, meals, plus-ones
+   alt: Wedding guest list with RSVP status, meal choices, plus-one names and a
+        running headcount
 
-04-vendors.png     Vendor payments, balances, an overdue warning
-   alt: Wedding vendor payment tracker showing total cost, deposit, balance
-        and an overdue final payment
+06-timeline.png       Phases dated from the wedding day
+   alt: Wedding timeline with phases dated from the wedding day, showing
+        overdue phases and current tasks
 
-05-timeline.png    The date-driven timeline
-   alt: Wedding planning timeline with phases dated from the wedding day,
-        showing overdue and current tasks
+07-vendors.png        Vendor payments and an overdue alert
+   alt: Wedding vendor payment tracker showing total cost, deposit, balance and
+        an overdue final payment
 
-06-phone.png       Two phones, guest list and home
-   alt: Wedding planner used on a phone home screen, showing the guest list
-        and countdown
+08-vows.png           The vow writer with prompts and word count
+   alt: Wedding vow writer with four prompts, a tone guide and a spoken length
+        estimate
 
-07-included.png    What you get: three files
-   alt: What is included in the download: the planner, a start here guide
-        and a personal use license
+09-devices.png        Two phones plus the private-and-offline promises
+   alt: The wedding planner on a phone home screen, working offline with the
+        plan kept on the device
 
-08-how.png         How it works in three steps
-   alt: Three steps to use the planner: download and unzip, double-click,
-        enter your names and date
+10-how-it-works.png   Three steps and what comes with it
+   alt: Three steps to use the planner: download and unzip, double-click to
+        open, add your names and date
 
-09-why.png         Why not a spreadsheet
-   alt: Four reasons to use this instead of a spreadsheet: no formulas, no
-        Google account, built for the job, yours forever
 
-10-guide.png       The included guide
-   alt: The included start here guide, thirteen plain English sections
+WHAT THESE IMAGES CLAIM, AND WHY
+
+Every line is something the planner does. There are deliberately no
+testimonials, because you have no buyers yet and invented reviews are both
+against Etsy's rules and the fastest way to lose a shop. Add a real review
+panel once you have real reviews — it will outperform any made-up one.
+
+There is also no mention of Excel or Google Sheets, printable page packs, a
+video tutorial, a seating plan or a photo gallery. Those belong to a different
+product. If you want any of them, they are a build, not a caption.
 
 
 VIDEO (optional, but it earns clicks)
 
-Five to fifteen seconds, filmed on your own screen: open the Guests tab,
-type a name, add it, and let the headcount tick up. Movement in a grid of
-still images is what makes a thumb stop.
+Five to fifteen seconds of your own screen: open the Guests tab, type a name,
+add it, and let the headcount tick up. Movement in a grid of stills is what
+makes a thumb stop.
 
 
-ONE HONEST NOTE
+ONE THING TO CHECK FIRST
 
-Photo 6 shows the planner on a phone. That is a real render at phone size,
-not a photograph of a handset, and the phone version needs the link you
-host. Test the link on your own phone before you publish, so the photo is
-a promise you have personally checked.
+Photo 9 shows the planner on a phone. That is a real render at phone size, and
+the phone route needs your hosted link working:
+evermore-planner-k4m9x2.netlify.app — open it on your own phone before you
+publish, so the photo is a promise you have personally checked.
