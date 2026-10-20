@@ -262,15 +262,13 @@ await test('Concierge fix needs confirmation, keeps a safety copy, and can be un
   await ctx.close();
 });
 
-await test('Backup round-trip, dated filename, v1 envelope, and no AI key inside', async () => {
-  const { ctx, page } = await fresh({ storage: Object.assign(planStore(basePlan()),
-    { evermore_ai_v2: JSON.stringify({ enabled: true, provider: 'anthropic', model: 'claude-opus-5-5', remember: true, key: 'sk-ant-SECRETKEY123456', verified: '' }) }) });
+await test('Backup round-trip, dated filename and v1 envelope', async () => {
+  const { ctx, page } = await fresh({ storage: planStore(basePlan()) });
   await page.click('.tab:has-text("Settings")');
   const [dl] = await Promise.all([page.waitForEvent('download'), page.click('button:has-text("Save backup file")')]);
   assert(/^evermore-backup-\d{4}-\d{2}-\d{2}\.json$/.test(dl.suggestedFilename()), 'filename ' + dl.suggestedFilename());
   const file = await dl.path();
   const txt = fs.readFileSync(file, 'utf8');
-  assert(!txt.includes('SECRETKEY'), 'key not in backup');
   const parsed = JSON.parse(txt);
   assert(parsed._evermore && parsed._evermore.version === '2.0' && parsed.guests.length === 4, 'v2 meta + plan at top level');
   fs.copyFileSync(file, path.join(OUT, 'backup-v2.json'));
@@ -282,7 +280,7 @@ await test('Backup round-trip, dated filename, v1 envelope, and no AI key inside
   await b.page.fill('#su-a', 'X'); await b.page.fill('#su-b', 'Y'); await b.page.fill('#su-date', iso(300));
   await b.page.click('text=Start planning');
   await b.page.click('.tab:has-text("Settings")');
-  await b.page.setInputFiles('#ai-settings ~ * input[type=file], .card input[type=file]', path.join(OUT, 'backup-v2.json'));
+  await b.page.setInputFiles('.card input[type=file]', path.join(OUT, 'backup-v2.json'));
   await b.page.waitForSelector('.undo-bar');
   const restored = await b.page.evaluate(() => JSON.parse(localStorage.getItem('evermore_planner_v1')));
   assert(restored.profile.partnerA === 'Alex' && restored.guests.length === 4 && restored.diary[0].text === 'SECRET DIARY TEXT', 'restored');
@@ -314,173 +312,32 @@ if (V1) await test('A v2.0 backup still restores into v1.0 (backward compatible)
   await ctx.close();
 });
 
-/* ---------------- AI ---------------- */
+/* ---------------- privacy: no network at all ---------------- */
 
-const ANTH = 'https://api.anthropic.com/v1/messages';
-function anthReply(text, extra = {}) {
-  return { status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' },
-    body: JSON.stringify(Object.assign({ id: 'msg_1', type: 'message', role: 'assistant', stop_reason: 'end_turn',
-      content: [{ type: 'thinking', thinking: '' }, { type: 'text', text }] }, extra)) };
-}
-async function aiPage(handler, extraStore = {}) {
-  const r = await fresh({ storage: Object.assign(planStore(basePlan()), extraStore) });
-  r.requests = [];
-  await r.ctx.route(ANTH, async route => {
-    const req = route.request();
-    if (req.method() === 'OPTIONS') return route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'POST' } });
-    r.requests.push({ headers: req.headers(), body: req.postDataJSON() });
-    return handler(route, r.requests.length);
-  });
-  await r.page.click('.tab:has-text("Settings")');
-  await r.page.check('#ai-enabled');
-  await r.page.fill('#ai-key', 'sk-ant-test-0123456789');
-  await r.page.dispatchEvent('#ai-key', 'change');
-  return r;
-}
-
-await test('AI is off by default and sends nothing until set up', async () => {
-  const { ctx, page } = await fresh({ storage: planStore(basePlan()) });
+await test('Never touches the network; CSP blocks any connection; old AI keys are wiped', async () => {
+  const { ctx, page } = await fresh({ storage: Object.assign(planStore(basePlan()),
+    { evermore_ai_v2: JSON.stringify({ enabled: true, remember: true, key: 'sk-ant-OLDKEY123456' }) }) });
   let calls = 0;
-  await ctx.route(/^https?:\/\/(?!localhost)/, r => { calls++; r.abort(); });
+  await ctx.route(/^(https?|wss?):/, r => { calls++; r.abort(); });
+  for (const t of ['home', 'concierge', 'budget', 'guests', 'timeline', 'vendors', 'diary', 'vows', 'settings']) await page.evaluate(t => APP.go(t), t);
   await page.click('.tab:has-text("Concierge")');
-  assert((await page.textContent('#ai-studio')).includes('Optional'), 'optional');
-  for (const t of ['home', 'budget', 'guests', 'timeline', 'vendors', 'diary', 'vows', 'settings']) await page.evaluate(t => APP.go(t), t);
-  assert(calls === 0, 'no network requests at all: ' + calls);
+  await page.click('.chip:has-text("What should we do next?")');
+  assert(calls === 0, 'network requests: ' + calls);
+  assert(await page.evaluate(() => localStorage.getItem('evermore_ai_v2')) === null, 'retired AI settings wiped');
+  const blocked = await page.evaluate(() => fetch('https://example.com/x').then(() => 'reached', () => 'blocked'));
+  assert(blocked === 'blocked', 'CSP blocks fetch');
+  const html = await page.content();
+  assert(!/api key|anthropic|openai|gemini/i.test(html.replace(/base64,[^)]+/g, '')), 'no AI wording left on the page');
   await ctx.close();
 });
 
-await test('AI test connection sends no plan data and uses the browser headers', async () => {
-  const r = await aiPage(route => route.fulfill(anthReply('OK')));
-  await r.page.click('#ai-test');
-  await r.page.waitForSelector('#ai-test-result:has-text("Connected")');
-  const q = r.requests[0];
-  assert(q.headers['x-api-key'] === 'sk-ant-test-0123456789', 'key header');
-  assert(q.headers['anthropic-dangerous-direct-browser-access'] === 'true', 'browser header');
-  assert(q.headers['anthropic-version'] === '2023-06-01', 'version');
-  assert(q.headers['anthropic-beta'] === 'server-side-fallback-2026-07-01' && q.body.fallbacks === 'default', 'fallbacks');
-  assert(q.body.model === 'claude-opus-5-5' && q.body.output_config.effort === 'medium', 'model/effort');
-  assert(!JSON.stringify(q.body).includes('Jordan'), 'no plan data in test');
-  // Key not remembered by default
-  const stored = await r.page.evaluate(() => localStorage.getItem('evermore_ai_v2'));
-  assert(!stored.includes('sk-ant-test'), 'key not in localStorage when not remembered');
-  await r.ctx.close();
-});
-
-await test('AI advice: consent first, private data never sent, output escaped, tasks need confirmation', async () => {
-  const evil = 'Here is advice <img src=x onerror="window.__xss=9"> **Pay the venue**.\n- Book florist\n- [ ] Call the caterer about numbers\n- [ ] Send RSVP reminders';
-  const r = await aiPage((route, n) => route.fulfill(anthReply(n === 1 ? 'OK' : evil)));
-  await r.page.click('#ai-test');
-  await r.page.waitForSelector('#ai-test-result:has-text("Connected")');
-  await r.page.click('.tab:has-text("Concierge")');
-  await r.page.click('#ai-studio button:has-text("Send to")');
-  await r.page.waitForSelector('.modal');
-  assert(await r.page.isDisabled('#modal-ok'), 'agree disabled until ticked');
-  assert(r.requests.length === 1, 'nothing sent before consent');
-  await r.page.check('#consent-ok');
-  await r.page.click('#modal-ok');
-  await r.page.waitForSelector('#ai-out');
-  const body = JSON.stringify(r.requests[1].body);
-  for (const secret of ['Jordan Lee', 'Priya', 'SECRET DIARY', 'events@rosewood', '555-0100', 'Alex', 'bookshop']) assert(!body.includes(secret), 'leaked ' + secret);
-  assert(body.includes('Rosewood Estate') && body.includes('10000'), 'shared vendor + budget');
-  assert(await r.page.evaluate(() => window.__xss) === undefined, 'AI html inert');
-  assert(await r.page.locator('#ai-out strong').count() === 1, 'bold formatting');
-  assert(await r.page.locator('#ai-out img').count() === 0, 'no img');
-  const before = await r.page.evaluate(() => localStorage.getItem('evermore_planner_v1'));
-  await r.page.click('button:has-text("Review 2 suggested tasks")');
-  await r.page.click('.modal button:has-text("Cancel")');
-  assert(await r.page.evaluate(() => localStorage.getItem('evermore_planner_v1')) === before, 'cancel changes nothing');
-  await r.page.click('button:has-text("Review 2 suggested tasks")');
-  await r.page.click('#modal-ok');
-  const tl = await r.page.evaluate(() => JSON.parse(localStorage.getItem('evermore_planner_v1')).timeline);
-  const all = tl.flatMap(p => p.tasks.map(t => t.text));
-  assert(all.includes('Call the caterer about numbers') && all.includes('Send RSVP reminders'), 'tasks added after confirm');
-  // Second send: no consent dialog again
-  await r.page.click('.tab:has-text("Concierge")');
-  await r.page.click('#ai-studio button:has-text("Send to")');
-  await r.page.waitForSelector('#ai-out');
-  assert(!(await r.page.isVisible('.modal')), 'consent remembered');
-  await noErrors(r.page);
-  await r.ctx.close();
-});
-
-await test('AI vows go into the plan only after confirmation, with undo', async () => {
-  const r = await aiPage((route, n) => route.fulfill(anthReply(n === 1 ? 'OK' : 'I choose you, every ordinary Tuesday.')),
-    { evermore_ai_v2: JSON.stringify({ consent: { provider: 'anthropic', at: 'x' } }) });
-  await r.page.click('#ai-test');
-  await r.page.waitForSelector('#ai-test-result:has-text("Connected")');
-  await r.page.click('.tab:has-text("Concierge")');
-  await r.page.click('#ai-studio button:has-text("Write our vows")');
-  await r.page.click('#ai-studio button:has-text("Send to")');
-  await r.page.waitForSelector('#ai-out');
-  const sent = JSON.stringify(r.requests[1].body);
-  assert(sent.includes('You are my home.') && sent.includes('bookshop'), 'drafts + story used for vows');
-  assert(!sent.includes('Rosewood'), 'vows do not carry vendor data');
-  await r.page.click('button:has-text("Use in my vows")');
-  await r.page.click('#modal-ok');
-  let vows = await r.page.evaluate(() => JSON.parse(localStorage.getItem('evermore_planner_v1')).vows);
-  assert(vows.promises === 'I choose you, every ordinary Tuesday.', 'vow added');
-  await r.page.click('.undo-bar button:has-text("Undo")');
-  vows = await r.page.evaluate(() => JSON.parse(localStorage.getItem('evermore_planner_v1')).vows);
-  assert(vows.promises === '', 'vow undone');
-  await r.ctx.close();
-});
-
-for (const [label, handler, expect] of [
-  ['401 bad key', route => route.fulfill({ status: 401, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"}}' }), 'key was not accepted'],
-  ['429 rate limit', route => route.fulfill({ status: 429, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"error":{"message":"rate limited"}}' }), 'rate or spending limit'],
-  ['500 provider error', route => route.fulfill({ status: 529, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"error":{"message":"overloaded"}}' }), 'busy'],
-  ['404 model', route => route.fulfill({ status: 404, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"error":{"message":"model"}}' }), 'recognise the model'],
-  ['network / CORS failure', route => route.abort('failed'), 'Couldn’t reach'],
-  ['refusal', route => route.fulfill(anthReply('', { stop_reason: 'refusal', content: [] })), 'declined'],
-  ['garbage body', route => route.fulfill({ status: 200, contentType: 'text/html', headers: { 'access-control-allow-origin': '*' }, body: '<html>proxy</html>' }), 'wasn’t an answer']
-]) {
-  await test('AI error handled: ' + label, async () => {
-    const r = await aiPage(handler);
-    await r.page.click('#ai-test');
-    await r.page.waitForSelector('#ai-test-result:has-text("Not connected")');
-    const t = await r.page.textContent('#ai-test-result');
-    assert(t.includes(expect), 'message: ' + t);
-    assert(!t.includes('sk-ant-test'), 'key never echoed');
-    await r.page.click('.tab:has-text("Concierge")');
-    assert(!(await r.page.isVisible('#ai-studio button:has-text("Send to")')), 'assistant stays off');
-    await noErrors(r.page).catch(e => { if (!/Failed to load resource/.test(e.message)) throw e; });
-    await r.ctx.close();
-  });
-}
-
-await test('AI request can be cancelled; offline mode says so and Concierge still works', async () => {
-  const r = await aiPage(async (route, n) => {
-    if (n === 1) return route.fulfill(anthReply('OK'));
-    await new Promise(res => setTimeout(res, 4000));
-    try { await route.fulfill(anthReply('late')); } catch (e) {}
-  }, { evermore_ai_v2: JSON.stringify({ consent: { provider: 'anthropic', at: 'x' } }) });
-  await r.page.click('#ai-test');
-  await r.page.waitForSelector('#ai-test-result:has-text("Connected")');
-  await r.page.click('.tab:has-text("Concierge")');
-  await r.page.click('#ai-studio button:has-text("Send to")');
-  await r.page.click('#ai-studio button:has-text("Cancel")');
-  await r.page.waitForSelector('#ai-studio .notice:has-text("Cancelled")');
-  await r.ctx.setOffline(true);
-  await r.page.click('#ai-studio button:has-text("Send to")');
-  await r.page.waitForSelector('#ai-studio .notice:has-text("offline")');
-  const a = await r.page.evaluate(() => EvermoreConcierge.analyze());
-  assert(a.next.length === 3, 'concierge offline');
-  await r.ctx.close();
-});
-
-await test('Local model endpoint is restricted to this computer', async () => {
+await test('Concierge still works with the computer offline', async () => {
   const { ctx, page } = await fresh({ storage: planStore(basePlan()) });
-  await page.click('.tab:has-text("Settings")');
-  await page.check('#ai-enabled');
-  await page.selectOption('#ai-provider', 'local');
-  await page.fill('#ai-endpoint', 'https://evil.example/v1/chat/completions');
-  await page.dispatchEvent('#ai-endpoint', 'change');
-  assert((await page.textContent('#ai-test-result')).includes('localhost'), 'rejected remote endpoint');
-  const cfg = await page.evaluate(() => JSON.parse(localStorage.getItem('evermore_ai_v2')));
-  assert(cfg.endpoint.startsWith('http://localhost'), 'kept local endpoint');
-  // CSP blocks any other host even if code tried
-  const blocked = await page.evaluate(() => fetch('https://evil.example/x').then(() => 'reached', () => 'blocked'));
-  assert(blocked === 'blocked', 'CSP connect-src blocks exfiltration');
+  await ctx.setOffline(true);
+  await page.reload();
+  await page.click('.tab:has-text("Concierge")');
+  await page.click('.chip:has-text("How much do we still owe?")');
+  assert((await page.textContent('#cg-answer')).includes('$9,500'), 'offline answer');
   await ctx.close();
 });
 
@@ -530,7 +387,6 @@ await test('Desktop screenshots render', async () => {
   await page.click('.tab:has-text("Concierge")');
   await page.screenshot({ path: path.join(OUT, 'desktop-concierge.png'), fullPage: true });
   await page.click('.tab:has-text("Settings")');
-  await page.check('#ai-enabled');
   await page.screenshot({ path: path.join(OUT, 'desktop-settings.png'), fullPage: true });
   await noErrors(page);
   await ctx.close();

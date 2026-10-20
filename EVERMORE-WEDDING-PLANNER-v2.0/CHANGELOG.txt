@@ -17,14 +17,8 @@ New
   * Ask the Concierge: plain questions ("How much do we still owe?") answered
     from your own plan, offline.
   * Copy-ready friendly RSVP reminder.
-  * Optional AI assistant using your own API key (Anthropic Claude tested;
-    OpenAI, Google Gemini, OpenRouter and local models via a connection
-    test). Planning advice, vow drafts, vendor emails and open questions.
-    Off by default, asks for consent before sending, shows exactly what is
-    sent, never sends guest names, contacts or your diary, and never changes
-    your plan without confirmation. See AI-SETUP-GUIDE.html.
   * Automatic safety copies: daily, and before every restore, reset or
-    accepted Concierge/AI change. Restore any of them from Settings.
+    accepted Concierge change. Restore any of them from Settings.
   * Undo after restoring a backup or a safety copy.
   * Add your own Timeline tasks, and remove ones that don't apply.
   * Include your vows in the printed keepsake.
@@ -53,8 +47,8 @@ Fixed
 Improved
   * Typefaces are now built into the file: identical look offline, and no
     requests to any font server.
-  * Strict Content Security Policy: the page can only connect to the AI
-    providers listed in Settings, and only when you use the assistant.
+  * Strict Content Security Policy: the page cannot connect anywhere at
+    all. No accounts, no API keys, no subscriptions.
   * Text contrast raised to meet WCAG AA; a "skip to planner" link; dialogs
     trap focus and close with Escape; labels on every control.
   * On phones the tab bar scrolls sideways instead of stacking three rows.

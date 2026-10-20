@@ -14,9 +14,8 @@ assistant), all saved locally in the visitor's browser — no backend required.
   that opens straight from disk (no `support.js`, no CDN, no server). Kept in
   step with the latest buyer build (currently v2.0).
 - `EVERMORE-WEDDING-PLANNER-v2.0/` (and `.zip`) — **the current buyer download**:
-  the planner with the offline Smart Concierge and the optional bring-your-own-key
-  AI assistant, plus START-HERE, AI-SETUP-GUIDE, LICENSE, FONT-LICENSE and
-  CHANGELOG. `EVERMORE-MOBILE-WEB-v2.0/` is the matching hosted phone build.
+  the planner with the offline Smart Concierge, plus START-HERE, LICENSE,
+  FONT-LICENSE and CHANGELOG. No accounts, API keys or internet needed. `EVERMORE-MOBILE-WEB-v2.0/` is the matching hosted phone build.
   The v1.0 folders are kept for reference.
 - `AUDIT-REPORT-v2.0.md` — what the v2.0 audit found, what changed, the tests
   that were run, and what is still open. For the seller, not the buyer zip.

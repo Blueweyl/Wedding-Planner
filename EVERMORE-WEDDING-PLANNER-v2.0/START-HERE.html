@@ -92,19 +92,18 @@
       <a href="#open">1. Open the planner</a>
       <a href="#first">2. Your first few minutes</a>
       <a href="#concierge">3. Your Smart Concierge</a>
-      <a href="#ai">4. The optional AI assistant</a>
-      <a href="#saved">5. Where your plan is saved</a>
-      <a href="#backups">6. Save a backup</a>
-      <a href="#restore">7. Restore a backup</a>
-      <a href="#erase">8. What can erase your plan</a>
-      <a href="#move">9. Move to another computer</a>
-      <a href="#phone">10. Using it on your phone</a>
-      <a href="#csv">11. Export the guest list</a>
-      <a href="#print">12. Print or save as PDF</a>
-      <a href="#browsers">13. Recommended browsers</a>
-      <a href="#privacy">14. Privacy and security</a>
-      <a href="#trouble">15. Troubleshooting</a>
-      <a href="#support">16. Support</a>
+      <a href="#saved">4. Where your plan is saved</a>
+      <a href="#backups">5. Save a backup</a>
+      <a href="#restore">6. Restore a backup</a>
+      <a href="#erase">7. What can erase your plan</a>
+      <a href="#move">8. Move to another computer</a>
+      <a href="#phone">9. Using it on your phone</a>
+      <a href="#csv">10. Export the guest list</a>
+      <a href="#print">11. Print or save as PDF</a>
+      <a href="#browsers">12. Recommended browsers</a>
+      <a href="#privacy">13. Privacy and security</a>
+      <a href="#trouble">14. Troubleshooting</a>
+      <a href="#support">15. Support</a>
     </div>
   </div>
 
@@ -165,8 +164,7 @@
     with a word count and a spoken-time estimate.</li>
     <li><strong>Concierge</strong> &#10022; &mdash; your next three actions, worked out from everything above.
     New in 2.0, and explained in the next section.</li>
-    <li><strong>Settings</strong> &mdash; your names, your date, your currency, backups, safety copies, the optional AI
-    assistant, and start-over.</li>
+    <li><strong>Settings</strong> &mdash; your names, your date, your currency, backups, safety copies, and start-over.</li>
   </ul>
   <p>The Timeline is yours to shape: add your own tasks at the bottom of any phase, and remove the ones that don't
   apply to you (there is an Undo straight after).</p>
@@ -193,24 +191,14 @@
   straight after.</div>
   <p>Not relevant? Press <em>Not now</em> and that suggestion is hidden for a week.</p>
 
-  <h2 id="ai">4. The optional AI assistant</h2>
-  <p>If you like, the Concierge can also use an AI model for personalised advice, writing your vows, drafting
-  emails to vendors, and open questions. <strong>This is entirely optional</strong>: there is no subscription,
-  nothing to buy from us, and every other part of Evermore works without it.</p>
-  <p>It uses <em>your own</em> API key from an AI provider (Anthropic Claude is the one we recommend and have
-  tested), so you pay the provider directly for what you use &mdash; typically a few cents per answer, and you
-  can set a monthly spending cap with the provider. Before anything is sent, Evermore shows you exactly what will be shared and asks for your OK. Guest
-  names, contact details and your diary are never sent.</p>
-  <p>Setup takes about five minutes. Open <strong>AI-SETUP-GUIDE.html</strong>, in this same folder, for the steps.</p>
-
-  <h2 id="saved">5. Where your plan is saved</h2>
+  <h2 id="saved">4. Where your plan is saved</h2>
   <p>Your plan is stored by <strong>the browser you opened it in, on the computer you opened it on</strong>.
   That is what makes it private &mdash; there is no server and no account, so nobody but you can see it.</p>
   <p>It also means the plan does not follow you around. If you open the planner in a different browser
   (say you normally use Chrome and one day open it in Edge), or on a different computer, that copy starts
   empty. To carry your plan across, use a backup file &mdash; that is next.</p>
 
-  <h2 id="backups">6. Save a backup</h2>
+  <h2 id="backups">5. Save a backup</h2>
   <p>This is the one habit worth having. Go to <strong>Settings &rarr; Backup &rarr; Save backup file</strong>.
   A file called <code>evermore-backup-</code><em>date</em><code>.json</code> lands in your Downloads folder (the date in
   the name means you never confuse an old backup with a new one). Keep it somewhere safe:
@@ -230,12 +218,11 @@
   </div>
   <h3>Automatic safety copies</h3>
   <p>Evermore 2.0 also keeps up to three <strong>safety copies</strong> by itself: once a day, and just before
-  anything big &mdash; restoring a backup, starting over, or accepting a change from the Concierge or the AI
-  assistant. You will find them under <strong>Settings &rarr; Backup</strong>, each with a <em>Restore this copy</em>
+  anything big &mdash; restoring a backup, starting over, or accepting a change from the Concierge. You will find them under <strong>Settings &rarr; Backup</strong>, each with a <em>Restore this copy</em>
   button. They live in the same browser as your plan, so they are a seatbelt, not a replacement for a backup file.</p>
   <p>Settings also shows when you last saved a backup, and the Concierge reminds you if it has been more than a month.</p>
 
-  <h2 id="restore">7. Restore a backup</h2>
+  <h2 id="restore">6. Restore a backup</h2>
   <ol>
     <li>Open the planner.</li>
     <li>Go to <strong>Settings &rarr; Backup &rarr; Restore from backup</strong>.</li>
@@ -248,7 +235,7 @@
   <p>If the file is incomplete or damaged, the planner will say so and change nothing at all. Your current
   plan is never half-replaced.</p>
 
-  <h2 id="erase">8. What can erase your plan</h2>
+  <h2 id="erase">7. What can erase your plan</h2>
   <div class="warn">
     <strong>Clearing your browser data can delete your plan.</strong> Anything that clears "cookies and site
     data" for local files will take your plan with it: browser cleanup tools, "clear browsing data" with site
@@ -265,7 +252,7 @@
     until the browser data is cleared.</li>
   </ul>
 
-  <h2 id="move">9. Move to another computer</h2>
+  <h2 id="move">8. Move to another computer</h2>
   <ol>
     <li>On the old computer: <strong>Settings &rarr; Save backup file</strong>.</li>
     <li>Copy two things to the new computer: the unzipped planner folder, and that backup file.</li>
@@ -276,7 +263,7 @@
   is no automatic syncing: whoever makes changes saves a backup, and the other person restores it. Two people
   editing at the same time will overwrite each other, so take turns.</p>
 
-  <h2 id="phone">10. Using it on your phone</h2>
+  <h2 id="phone">9. Using it on your phone</h2>
   <p>Yes &mdash; on an iPhone, an iPad or an Android phone. Phones cannot run the downloaded file directly, so
   there is a web address for exactly this:</p>
   <div class="card" style="text-align:center;">
@@ -297,7 +284,7 @@
     <strong>Your phone and your computer keep separate plans.</strong> There is no syncing, because there is no
     account and no server &mdash; that is the same reason nobody can see your plan. Pick one device as the one
     you really plan on. To move everything across, save a backup on that device and restore it on the other
-    (sections 6 and 7).
+    (sections 5 and 6).
   </div>
 
   <h3>On an iPhone, saving a backup works a little differently</h3>
@@ -307,13 +294,13 @@
   <p>Because of that, if you only plan on a phone, take a backup on a laptop now and then too &mdash; it is the
   easiest place to keep one safely.</p>
 
-  <h2 id="csv">11. Export the guest list</h2>
+  <h2 id="csv">10. Export the guest list</h2>
   <p><strong>Guests &rarr; Export CSV</strong> saves <code>guest-list-</code><em>date</em><code>.csv</code> to your Downloads folder. It
   opens in Excel, Numbers, Google Sheets or anything else that reads spreadsheets, with a column for the name,
   the RSVP, the meal, the plus-one, the plus-one's name and how many seats that row needs.</p>
   <p>Handy for sending a final headcount to your caterer, or for building a seating chart.</p>
 
-  <h2 id="print">12. Print or save as PDF</h2>
+  <h2 id="print">11. Print or save as PDF</h2>
   <p>Any tab prints from your browser (<code>Ctrl</code>+<code>P</code>, or <code>&#8984;</code>+<code>P</code>
   on a Mac). In the print dialog, choose <em>Save as PDF</em> as the destination instead of a printer, and you
   have a file to keep or send.</p>
@@ -322,29 +309,26 @@
   to add them at the end. It prints as clean typeset pages, with the buttons and
   navigation left out.</p>
 
-  <h2 id="browsers">13. Recommended browsers</h2>
+  <h2 id="browsers">12. Recommended browsers</h2>
   <p>Evermore 2.0 is built and tested on <strong>Google Chrome</strong> and <strong>Microsoft Edge</strong>
   (current versions, both built on Chromium). Those are the safe choice.</p>
   <p>It uses nothing exotic, so other current browsers &mdash; Firefox, Safari, Brave, Opera &mdash; should work
   too. If anything looks or behaves oddly in one of those, open it in Chrome or Edge instead and it will be fine.
   Internet Explorer is not supported.</p>
   <p>On a phone, use <strong>Safari</strong> on an iPhone or iPad and <strong>Chrome</strong> on Android, with the
-  link in section 10. Those are the two that can add it to your home screen properly.</p>
+  link in section 9. Those are the two that can add it to your home screen properly.</p>
 
-  <h2 id="privacy">14. Privacy and security</h2>
+  <h2 id="privacy">13. Privacy and security</h2>
   <ul>
     <li>Your plan is stored only in your browser on your computer. Evermore has no server, no account, no
     tracking and no analytics.</li>
-    <li>The planner makes <strong>no internet requests at all</strong> unless you turn on the optional AI assistant.
-    Even the typefaces are built in. A strict security policy inside the file blocks connections to anywhere except
-    the AI providers listed in Settings.</li>
-    <li>Your AI key is kept only on this computer &mdash; and, unless you tick <em>Remember my key</em>, only until you
-    close the tab. It is never put in a backup file.</li>
-    <li>Anything you type, and anything an AI writes, is shown as plain text. It can never run as code in the page.</li>
-    <li>Guest names, meal choices, contact details and your diary are never sent to an AI provider.</li>
+    <li>The planner makes <strong>no internet requests at all</strong>. Even the typefaces are built in, and a strict
+    security policy inside the file blocks every connection. There are no accounts, no API keys and nothing to
+    subscribe to.</li>
+    <li>Anything you type is shown as plain text. It can never run as code in the page.</li>
   </ul>
 
-  <h2 id="trouble">15. Troubleshooting</h2>
+  <h2 id="trouble">14. Troubleshooting</h2>
 
   <div class="q">The file opens as code, or in a text editor</div>
   <p>Right-click it &rarr; <em>Open with</em> &rarr; your browser. To make that permanent, use
@@ -364,11 +348,6 @@
   <p>Something outside the planner damaged what the browser stored. Evermore 2.0 puts that data safely to one side
   before anything can overwrite it. Restore your latest backup from Settings, and use <em>Download unreadable copy</em>
   to send the damaged data to support if you would like help recovering it.</p>
-
-  <div class="q">The AI assistant says it can't connect</div>
-  <p>See the troubleshooting section of <strong>AI-SETUP-GUIDE.html</strong>. The Smart Concierge keeps working
-  either way.</p>
-
   <div class="q">My plan is gone</div>
   <p>Check three things: are you in the same browser you started in; are you opening it from the same folder;
   and have you cleared browsing data recently? If none of those explains it, restore your most recent backup
@@ -391,7 +370,7 @@
   <p>Date fields are drawn by your browser, not by the planner, so they look and work slightly differently in
   each one. Typing the date in the format your browser shows always works.</p>
 
-  <h2 id="support">16. Support</h2>
+  <h2 id="support">15. Support</h2>
   <div class="card">
     <p style="margin-bottom:6px;"><strong>Questions, or something not behaving?</strong></p>
     <p style="margin-bottom:10px;">Message me through the shop &mdash; Etsy &rarr; <em>Purchases and reviews</em>

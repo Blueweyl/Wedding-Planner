@@ -7,14 +7,14 @@ This report is for the seller. Don't put it in the buyer ZIP.
 | | v1.0 (as audited) | v2.0 |
 |---|---|---|
 | Data integrity and backup safety (25) | 17 | 24 |
-| Security and privacy (20) | 16 | 19 |
+| Security and privacy (20) | 16 | 20 |
 | Correctness of calculations and dates (15) | 11 | 15 |
-| Feature completeness against the brief (15) | 8 | 15 |
+| Feature completeness against the brief (15) | 8 | 13 |
 | UX, accessibility and mobile (15) | 12 | 14 |
 | Delivery and commercial readiness (10) | 9 | 9 |
-| **Total** | **73** | **96** |
+| **Total** | **73** | **95** |
 
-This is my own assessment against the brief, not an independent certification. The points that are still missing are listed under "Remaining issues" below.
+This is my own assessment against the brief, not an independent certification. The optional AI assistant from the brief was built, then removed at the seller's request because it needed buyer API keys. Its two feature points are deducted, and privacy now scores full marks because the planner can't make any network connection at all. The points that are still missing are listed under "Remaining issues" below.
 
 There are **no known critical or high-severity defects.**
 
@@ -29,9 +29,9 @@ There are **no known critical or high-severity defects.**
 | Medium | `isIsoDate` accepted 2026-02-31, which the browser quietly turned into 3 March. | Dates must round-trip exactly. |
 | Medium | `today()` used UTC, so diary entries could be filed under the wrong day. | Local date. |
 | Medium | A currency label from an edited backup was printed without escaping in some places, which allowed HTML injection. | The label is limited to letters and currency signs, and every `money()` output is escaped. |
-| Medium | The page made requests to Google Fonts on every open, which sent IP and referrer data to Google and broke the look offline. | The fonts are embedded (OFL 1.1, licence included). The page makes zero network requests unless the AI assistant is used. |
-| Medium | There was no Content-Security-Policy. | Strict CSP: `connect-src` allows only the listed AI endpoints plus localhost, with `default-src 'none'`, `object-src 'none'`, `base-uri 'none'` and `form-action 'none'`. A test shows it blocks requests to any other host. |
-| Medium | Restoring a backup replaced everything with no way back, and reset had no safety net. | Three automatic safety copies (daily, and before each restore, reset or AI/Concierge change), undo after a restore, and a summary of the backup before confirming. |
+| Medium | The page made requests to Google Fonts on every open, which sent IP and referrer data to Google and broke the look offline. | The fonts are embedded (OFL 1.1, licence included). The page makes zero network requests. |
+| Medium | There was no Content-Security-Policy. | Strict CSP: `default-src 'none'` and `connect-src 'none'`, so the page cannot connect anywhere. Also `object-src 'none'`, `base-uri 'none'` and `form-action 'none'`. A test shows `fetch` is blocked. |
+| Medium | Restoring a backup replaced everything with no way back, and reset had no safety net. | Three automatic safety copies (daily, and before each restore, reset or Concierge change), undo after a restore, and a summary of the backup before confirming. |
 | Low | Several text colours fell below WCAG AA contrast (muted text was 3.8:1). | Raised to 4.9:1 or better. Added a skip link, focus-trapped dialogs with Escape to close, and a label on every control (tested). |
 | Low | The phone tab bar wrapped onto 3 rows. | It now scrolls sideways. A test checks for no horizontal page scroll on every tab at 375px. |
 | Low | Warnings were rewritten on every keystroke, which also reset a half-chosen file in the restore picker. | They're only written when they change. |
@@ -55,20 +55,11 @@ There are **no known critical or high-severity defects.**
 - A one-week "Not now" snooze.
 - Every one-click fix shows a before/after dialog, takes a snapshot first, and can be undone.
 
-**Optional AI** (bring your own key, no backend):
-- **Providers:** Anthropic Claude (default `claude-opus-5-5`; Sonnet 5.5 and Haiku 5.5 selectable), OpenAI, Google Gemini, OpenRouter, and a local model restricted to localhost.
-- **Features:** planning advice, vow drafts, vendor emails, open questions.
-- **Off by default.** A provider only unlocks after a successful connection test, which sends no plan data.
-- **Consent:** a consent dialog appears before the first send, and again whenever the provider or the sharing scope changes. A "see exactly what is sent" preview is always available.
-- **What's sent:** guest names, meals, contacts and the diary are never sent. Names are off by default.
-- **Key storage:** the key is held only for the tab session unless "remember" is ticked, and it is never in backups or snapshots. Error messages strip anything that looks like a key.
-- **Output:** escaped before light formatting. It never changes the plan. Vow text and suggested tasks go through confirm dialogs with snapshot and undo.
-- **Errors handled:** 401/403, 404, 429, 5xx/529, refusal, empty or non-JSON body, network/CORS failure, offline, timeout after 150 s, and user cancel.
-- **Anthropic call details:** `anthropic-dangerous-direct-browser-access`, adaptive thinking at `effort: medium`, and `fallbacks: "default"` (with the `server-side-fallback-2026-07-01` header) on Opus/Sonnet 5.5.
+**Optional AI: removed.** A bring-your-own-key AI assistant was built and tested, then removed at the seller's request because it needed API keys. All its code, settings and docs are gone. On load, the planner deletes the two storage keys an early 2.0 build could have used (`evermore_ai_v2` and `evermore_ai_session_key_v2`).
 
 ## Phase 6: testing that was actually run
 
-**Automated suite:** `qa/evermore-v2.test.mjs`, Playwright on Chromium, run against the real HTML file over `file://`. **30/30 passed** on the final build. It covers:
+**Automated suite:** `qa/evermore-v2.test.mjs`, Playwright on Chromium, run against the real HTML file over `file://`. **19/19 passed** on the final build. It covers:
 - Boot with no errors and no CSP violations; setup validation.
 - Opening a v1.0 plan from localStorage (records kept, legacy € migrated).
 - Rescue of corrupt storage, and that the rescued copy survives later saves and downloads byte-for-byte.
@@ -78,43 +69,36 @@ There are **no known critical or high-severity defects.**
 - XSS payloads in every field, checked on all tabs and the keepsake.
 - Concierge ranking, and the headcount rule at 25 vs 40 days.
 - Fixes: confirm, Escape, snapshot, undo, snooze.
-- Backup round-trip: dated name, no AI key inside, restore summary, undo restore, junk file rejected.
+- Backup round-trip: dated name, restore summary, undo restore, junk file rejected.
 - A **v2 backup restored into the real v1.0 file.**
-- AI: no network requests while it's off; request headers and body on the connection test; consent gating; a privacy leak check on the actual request body; escaping of AI HTML; confirm/cancel for tasks and vows, with undo.
-- 7 AI error types, cancel, and offline.
-- Rejection of non-local endpoints, and the CSP blocking other hosts.
+- **Zero network requests** across every tab and the Concierge, with `fetch` blocked by the CSP, leftover AI keys wiped, and no AI wording left on the page.
+- The Concierge working with the browser offline.
 - Timeline task add, remove and undo; vows in the keepsake; print media.
 - No horizontal overflow at 375px on every tab.
 - Accessible names on every control.
-- Performance with 1,500 guests and 150 vendors: worst tab render about 140 ms, Concierge analysis about 10 ms.
-
-**Live check:** the real Chromium build, opened from `file://`, called the real `api.anthropic.com` with a deliberately invalid key. CORS preflight and the response both went through, and the 401 came back as "Your API key was not accepted". That proves the browser path. A successful generation couldn't be run here because no API key was available.
+- Performance with 1,500 guests and 150 vendors: worst tab render about 120 ms, Concierge analysis about 12 ms.
 
 **Phone build:** served over HTTP, the service worker reached "ready", and after going offline a reload worked, including the Concierge tab, with no console or CSP errors.
 
-**Guides:** the START-HERE and AI-SETUP-GUIDE pages make no network requests, have no horizontal overflow at 375px, and all table-of-contents links resolve.
+**Guide:** the START-HERE page makes no network requests, have no horizontal overflow at 375px, and all table-of-contents links resolve.
 
 ## Remaining issues
 
 These are all low or medium severity, and none of them block release.
 
-1. **OpenAI, Gemini and OpenRouter weren't tested end to end.** The sandbox's proxy blocked those hosts. The in-app connection test checks them on the buyer's machine, and if it fails the assistant stays off. The default OpenAI model name `gpt-5-mini` is unverified, but the field can be edited.
-2. **No successful AI generation was run against a live account,** because there was no key. Request and response shapes are tested against mocks built from the documented API.
-3. **Only Chromium was automated.** Firefox and Safari weren't available in this environment. The code uses nothing beyond ES5 plus `fetch` and `AbortController`, and the AI is disabled if those are missing. Please do a quick manual pass in Safari and Firefox before listing.
-4. **The CSP still needs `'unsafe-inline'`** for scripts, because the v1 architecture uses inline handlers everywhere. That's mitigated by escaping everything that's rendered (and tested). Moving to `addEventListener` would allow a nonce-based CSP, but it would mean a large rewrite, which the brief ruled out.
-5. **A remembered AI key is stored in plain text in localStorage.** That is unavoidable without a backend. The UI says so and recommends a provider spending cap.
-6. **Deletes and restores still use the browser's own `confirm()` dialog.** It's reliable and accessible, but plain-looking. The new flows use the styled dialog.
-7. **Seller to-dos:**
+1. **Only Chromium was automated.** Firefox and Safari weren't available in this environment. The code is plain ES5 with standard DOM APIs. Please do a quick manual pass in Safari and Firefox before listing.
+2. **The CSP still needs `'unsafe-inline'`** for scripts, because the v1 architecture uses inline handlers everywhere. That's mitigated by escaping everything that's rendered (and tested). Moving to `addEventListener` would allow a nonce-based CSP, but it would mean a large rewrite, which the brief ruled out.
+3. **Deletes and restores still use the browser's own `confirm()` dialog.** It's reliable and accessible, but plain-looking. The Concierge's flows use the styled dialog.
+4. **Seller to-dos:**
    - Re-deploy `EVERMORE-MOBILE-WEB-v2.0/` to the existing phone link (the sw cache version is bumped to 2.0.0).
    - Refresh the Etsy listing copy and photos to show the Concierge.
-   - Have the LICENSE draft reviewed (it adds an AI section) before publishing.
+   - Have the LICENSE reviewed before publishing.
 
 ## Deliverables
 
 - `EVERMORE-WEDDING-PLANNER-v2.0.zip`, the buyer download, containing:
   - `Evermore-Wedding-Planner.html`
   - `START-HERE.html`
-  - `AI-SETUP-GUIDE.html`
   - `LICENSE.txt`
   - `FONT-LICENSE.txt`
   - `CHANGELOG.txt`

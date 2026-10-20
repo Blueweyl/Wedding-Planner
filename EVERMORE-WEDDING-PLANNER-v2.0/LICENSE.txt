@@ -43,30 +43,14 @@ planner, a venue, a stationer or any other business that wants to use
 Evermore with clients, please get in touch for a commercial license.
 
 
-THE OPTIONAL AI ASSISTANT
-
-  * The AI assistant is optional and off until you turn it on. It uses
-    an API key that you obtain from an AI provider of your choosing, on
-    that provider's own terms and prices. You are responsible for that
-    account, its charges, and keeping the key private.
-  * When you use it, the planner sends a summary of your plan, which you
-    approve first, directly from your browser to that provider. Nothing
-    passes through the seller, who never receives your key or your plan.
-  * AI output can be inaccurate. It is a suggestion, not professional
-    financial, legal or planning advice. Check anything important.
-  * The AI providers named in the planner are independent companies.
-    Evermore is not affiliated with or endorsed by them.
-
-
 NO WARRANTY
 
 Evermore is provided "as is". It stores everything in your own web
-browser on your own computer; nothing is sent anywhere unless you turn
-on the optional AI assistant. Because of that,
+browser on your own computer; nothing is sent anywhere. Because of that,
 YOU are responsible for keeping backups, and the planner gives you a
 "Save backup file" button for exactly that reason. To the fullest extent
 allowed by law, the seller is not liable for any lost data, lost plans,
-missed deadlines, AI-generated content, or any other loss arising from the
+missed deadlines, or any other loss arising from the
 use of this planner.
 
 Your statutory consumer rights are not affected by anything in this
