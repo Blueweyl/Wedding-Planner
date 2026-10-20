@@ -1,0 +1,16 @@
+const { chromium } = await import('/opt/node-tools/node_modules/playwright/index.mjs');
+const browser = await chromium.launch();
+const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+const page = await ctx.newPage();
+const errs = []; page.on('pageerror', e => errs.push(String(e))); page.on('console', m => { if (m.type()==='error') errs.push(m.text()); });
+await page.goto('http://localhost:8765/');
+await page.waitForFunction(() => window.EVERMORE_PWA && window.EVERMORE_PWA.state === 'ready', null, { timeout: 20000 });
+await page.fill('#su-a', 'A'); await page.fill('#su-b', 'B'); await page.fill('#su-date', '2027-05-01');
+await page.click('text=Start planning');
+await ctx.setOffline(true);
+await page.reload();
+await page.waitForSelector('#home-concierge');
+await page.click('.tab:has-text("Concierge")');
+const t = await page.textContent('.cg-hero');
+console.log('offline reload OK:', t.includes('days to go'), 'state', await page.evaluate(() => EVERMORE_PWA.state), 'errors', errs);
+await browser.close();

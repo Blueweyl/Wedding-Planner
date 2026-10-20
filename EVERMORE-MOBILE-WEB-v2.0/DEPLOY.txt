@@ -1,0 +1,88 @@
+EVERMORE — MOBILE WEB BUNDLE (v2.0)
+Read this once. It is for YOU, the seller — do not include it in the
+buyer's download.
+
+
+WHAT THIS IS
+
+The same planner, served from a web address instead of a file. That is the
+only way an iPhone can run it, and it is much nicer on Android too: the
+buyer opens your link, taps "Add to Home Screen", and from then on it
+behaves like an installed app — its own icon, no browser bars, and it
+works with no signal.
+
+Nothing about it is a service. There is no server code, no database, no
+accounts, no data leaving the phone. It is five static files. The plan
+still lives only in that phone's browser storage.
+
+  index.html              the planner (identical to the download)
+  manifest.webmanifest    name, icon and "open like an app"
+  sw.js                   the offline worker
+  icon-192.png            Android icon
+  icon-512.png            Android icon (also used as the maskable icon)
+  apple-touch-icon.png    iPhone / iPad home-screen icon
+
+
+HOSTING IT (pick one — all free, all take about five minutes)
+
+  Cloudflare Pages   dash.cloudflare.com -> Workers & Pages -> Create ->
+                     Pages -> Upload assets. Drag this whole folder in.
+                     You get a link like evermore-xyz.pages.dev.
+
+  Netlify Drop       app.netlify.com/drop — drag the folder onto the page.
+                     No account needed to start.
+
+  GitHub Pages       put these files in a repository, then Settings ->
+                     Pages -> deploy from the main branch.
+
+All three serve over HTTPS, which is required: a service worker will not
+run over plain http, so "Add to Home Screen" and offline use need the
+https link. Your own domain works too if you have one.
+
+Upload the folder's CONTENTS at the root of the site, so the planner
+answers at https://your-link/ and sw.js sits beside it.
+
+
+AFTER YOU HOST IT
+
+1. Open the link on your own phone — an iPhone and an Android if you can
+   get hold of both — and run through setup, a guest, a budget line and a
+   backup before you put the link in front of a buyer.
+2. Add it to your home screen and check it opens without browser bars.
+3. Turn on airplane mode and open it again. It should still work.
+4. Put the link into START-HERE.html, section 8, where it says
+   [YOUR PLANNER LINK HERE], then rebuild the buyer zip.
+
+
+WHEN YOU CHANGE THE PLANNER
+
+Re-upload the folder, and bump the version line at the top of sw.js:
+  var VERSION = '2.0.0';
+to '2.0.1', and so on. The old cache is then deleted on the phone the
+next time the worker starts.
+
+The planner page itself is fetched from the network first, so a phone that
+has any connection picks up your new upload on its next open even if you
+forget to bump the version -- the cache is only the offline fall-back. If
+the app is open at the time, a small note appears offering a reload, and
+the couple's plan is untouched either way. Bump the version anyway: it is
+what clears the old icons, manifest and fonts.
+
+
+TWO THINGS TO GO IN WITH YOUR EYES OPEN
+
+* A link is easier to pass around than a paid file. Anyone who has it can
+  use the planner. Keep the link out of your public listing photos and
+  give it only inside the download, where buyers get it.
+* The link is now something you maintain. If you take the hosting down,
+  phones that installed it keep working from their cache, but new buyers
+  and fresh installs will not. The offline file in the download is the
+  promise that always holds — the link is the convenience.
+
+
+WHAT IS STILL NOT POSSIBLE
+
+Automatic syncing between a phone and a computer. There is no server, so
+there is nothing to sync through. Moving a plan between devices means
+saving a backup file on one and restoring it on the other. That is stated
+plainly for buyers in START-HERE.html.

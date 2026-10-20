@@ -11,7 +11,16 @@ assistant), all saved locally in the visitor's browser — no backend required.
 - `Wedding Planner Landing.dc.html` — the marketing/landing page. Its
   "Start Planning" button links to the planner app.
 - `Wedding Planner.html` — a standalone single-file version of the planner
-  that opens straight from disk (no `support.js`, no CDN, no server).
+  that opens straight from disk (no `support.js`, no CDN, no server). Kept in
+  step with the latest buyer build (currently v2.0).
+- `EVERMORE-WEDDING-PLANNER-v2.0/` (and `.zip`) — **the current buyer download**:
+  the planner with the offline Smart Concierge and the optional bring-your-own-key
+  AI assistant, plus START-HERE, AI-SETUP-GUIDE, LICENSE, FONT-LICENSE and
+  CHANGELOG. `EVERMORE-MOBILE-WEB-v2.0/` is the matching hosted phone build.
+  The v1.0 folders are kept for reference.
+- `AUDIT-REPORT-v2.0.md` — what the v2.0 audit found, what changed, the tests
+  that were run, and what is still open. For the seller, not the buyer zip.
+- `qa/` — the automated Playwright checks.
 - `Our Wedding Planner.dc.html` — the planner app itself (Home, Budget,
   Guests, Timeline, Vendors, Diary, Vows tabs). On a first visit it asks for
   both names and a wedding date before it opens (or you can load the example

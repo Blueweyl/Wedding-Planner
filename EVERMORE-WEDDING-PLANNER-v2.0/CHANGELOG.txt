@@ -1,0 +1,74 @@
+EVERMORE WEDDING PLANNER — CHANGELOG
+
+
+VERSION 2.0 — Smart Concierge                                  October 2026
+
+New
+  * Smart Concierge tab, plus a "next steps" card on Home. Reads your whole
+    plan and ranks what matters: overdue and upcoming vendor payments, RSVP
+    follow-ups, missing meal choices, the caterer headcount, over-budget
+    categories, vendor quotes that exceed their budget line, overdue and
+    current checklist phases, essential vendors not yet booked, vows, and
+    backups. Works fully offline; nothing leaves your computer.
+  * Your next three actions, with one-click shortcuts. Any shortcut that
+    changes your plan shows the change first and waits for confirmation.
+  * Budget savings ideas matched to your biggest categories, and what each
+    extra guest costs in catering.
+  * Ask the Concierge: plain questions ("How much do we still owe?") answered
+    from your own plan, offline.
+  * Copy-ready friendly RSVP reminder.
+  * Optional AI assistant using your own API key (Anthropic Claude tested;
+    OpenAI, Google Gemini, OpenRouter and local models via a connection
+    test). Planning advice, vow drafts, vendor emails and open questions.
+    Off by default, asks for consent before sending, shows exactly what is
+    sent, never sends guest names, contacts or your diary, and never changes
+    your plan without confirmation. See AI-SETUP-GUIDE.html.
+  * Automatic safety copies: daily, and before every restore, reset or
+    accepted Concierge/AI change. Restore any of them from Settings.
+  * Undo after restoring a backup or a safety copy.
+  * Add your own Timeline tasks, and remove ones that don't apply.
+  * Include your vows in the printed keepsake.
+  * "Last backup saved" shown in Settings; dated backup and CSV file names.
+
+Fixed
+  * DATA SAFETY: if saved data could not be read, v1.0 promised to leave it
+    alone but overwrote it with the next change. It is now copied aside
+    first and can be downloaded.
+  * A single damaged value (an impossible date, a non-number amount) no
+    longer makes the whole plan unreadable; just that value is reset and you
+    are told how many were.
+  * After the wedding date passed, Settings refused to save a name change.
+  * Amounts were rounded to whole units, so a 50-cent balance showed as
+    "paid in full". Money is now exact to the cent everywhere (JPY stays in
+    whole yen), and totals no longer drift from decimal rounding.
+  * Amount fields no longer flag figures that aren't multiples of 50.
+  * Impossible dates such as 31 February were accepted and silently became
+    a different day.
+  * "Today" (the default diary date) used UTC, so evenings in the Americas
+    and mornings in Asia filed entries under the wrong day.
+  * A currency label in an edited backup file could inject markup.
+  * CSV export now opens accented names correctly in Excel.
+  * Warnings no longer redraw on every keystroke.
+
+Improved
+  * Typefaces are now built into the file: identical look offline, and no
+    requests to any font server.
+  * Strict Content Security Policy: the page can only connect to the AI
+    providers listed in Settings, and only when you use the assistant.
+  * Text contrast raised to meet WCAG AA; a "skip to planner" link; dialogs
+    trap focus and close with Escape; labels on every control.
+  * On phones the tab bar scrolls sideways instead of stacking three rows.
+  * Restoring a backup tells you whose plan it is, when it was saved, and how
+    many guests and vendors it holds before you confirm.
+  * A note appears if the plan is changed in another tab at the same time.
+  * Printing any tab leaves out the navigation and warning bars.
+
+Compatibility
+  * Opens your existing v1.0 plan automatically — no import needed.
+  * v1.0 backup files restore into 2.0, and 2.0 backup files restore into
+    1.0.
+
+
+VERSION 1.0                                                  September 2026
+  * First release: Home, Budget, Guests, Timeline, Vendors, Diary, Vows,
+    Settings, backups, CSV export, currencies and keepsake printing.
